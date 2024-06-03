@@ -1,0 +1,1254 @@
+Win32 API 関数やメソッドなど
+
+・MessageBox()関数
+　　= メッセージボックスを表示する。戻り値はどのボタンが押されたかを表す整数を返し、
+　　　押されたボタンのフラグは定数として用意されており、押されたボタンが「はい」ならIDYES、「いいえ」ならIDNOに等しくなる。
+　　　「はい」「いいえ」ボタンがあるメッセージボックスはMB_YESNOを第四引数に渡す。
+
+　　int MessageBox(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType);
+
+　　　hWnd = オーナーウィンドウを指定する。
+
+　　　lpText = メッセージボックスに表示するメインの文字列を指定する。
+
+　　　lpCaption = タイトルバーに表示される文字列を指定する。
+
+　　　uType = メッセージボックスの内容をフラグで指定する。複数の項目を指定する時は論理和 | で指定する。
+
+・wsprintf()関数
+　　= sprintfのWin32版。関数が成功すると、バッファに格納された終端のNULLを含まない文字数が返り、
+　　　関数が失敗すると、書式制御文字列の長さよりも小さな値が返る。
+
+　　int wsprintf(LPTSTR lpOut, LPCTSTR lpFmt, …);
+
+　　　lpOut = フォーマットした文字列を格納するバッファを指定する。
+
+　　　lpFmt = NULLで終わる書式制御文字列へのポインタを指定する。
+
+・lstrcpy関数 = 文字列をバッファにコピーする。関数が成功すればバッファへのポインタが、失敗すればNULLが返る。
+
+　　lstrcpy(LPTSTR lpString1, LPCSTR lpString2);
+
+　　　lpString1 = lpString2をコピーするバッファへのポインタを指定する。バッファは十分なサイズを持っている必要がある。
+
+　　　lpString2 = lpString1にコピーする文字列へのポインタを指定する。
+
+・lstrcpyn関数 = 指定文字列のポインタからバッファに指定文字数だけコピーする。関数が成功すればバッファへのポインタが、
+　　　　　　　　 失敗すればNULLが返る。しかし、この関数を使いこなすにはコピーする文字列の文字数を知る必要があるため、
+　　　　　　　　 文字列の文字数を取得したい場合は、lstrlen関数と併用すると良い。
+
+　　lstrcpyn(LPTSTR lpString1, LPCTSTR lpString2, int iMaxLength);
+
+　　　lpString1 = lpString2をコピーするバッファへのポインタを指定する。バッファは十分なサイズを持っている必要がある。
+
+　　　lpString2 = lpString1にコピーする文字列へのポインタを指定する。
+
+　　　iMaxLength = NULL文字も含めたコピーする文字数を指定する。
+
+・lstrlen関数 = 文字列の文字数を取得する。関数はバイト数(ANSI)、または文字数(Unicode)を返す。
+　　　　　　　　lstrcpyn関数ではNULL文字も含めた文字数を指定しなければならないことに対し、
+　　　　　　　　この関数はNULL文字を含めない文字数を返す、といった点に注意する。
+
+　　int lstrlen(LPCTSTR lpString);
+
+　　　lpString = 文字列へのポインタを指定する。
+
+・lstrcat関数 = 文字列を結合する。成功すれば結合した文字列へのポインタ、失敗すればNULLが返る。
+
+　　LPTSTR lstrcat(LPTSTR lpString1, LPCTSTR lpString2);
+
+　　　lpString1 = lpString2をNULL文字から結合する文字列へのポインタ。このポインタが指す文字列の末尾に
+　　　　　　　　　lpString2が結合されるのでこのポインタが指すバッファは十分なサイズを保有している必要がある。
+
+　　　lpString2 = lpString1に結合させる文字列へのポインタを指定する。
+
+・GetCommandLIne関数
+　　= コマンドライン引数へアクセスする。
+
+　　LPTSTR GetCommandLine(VOID)
+
+・CreateWindow関数
+　　= オーバーラップウィンドウ、ポップアップウィンドウ、子ウィンドウのいずれかを作成する。
+　　　戻り値としてHWND型の値を返す。これは「ウィンドウハンドル」と呼ばれるもので、個々のウィンドウを識別するための値のようなもの。
+　　　ウィンドウの生成に失敗するとNULLを返す。
+
+　　HWND CreateWindow(
+        LPCTSTR lpClassName, LPCTSTR lpWindowName
+        DWORD dwStlye,
+        int x, int y, int nWidth, int nHeight,
+        HWND hWndParent, HMENU hMenu,
+        HANDLE hInstance, LPVOID lpParam
+)
+
+　　　lpClassName = ウィンドウクラス名を指定する。いくつか用意されたものがある。
+　　　lpWindowName = ウィンドウ名を指定する。タイトルバーなどに表示される。
+　　　dwStyle = ウィンドウのスタイルを定数で指定する。DWORDという型は32ビット符号なし整数。
+　　　x = ウィンドウの初期位置のX座標を指定する。デスクトップの左上を0,0としてピクセルで指定する。
+　　　y = ウィンドウの初期位置のY座標を指定する。デスクトップの左上を0,0としてピクセルで指定する。
+　　　nWidth = ウィンドウの横幅をピクセルで指定する。
+　　　nHeight = ウィンドウ縦幅をピクセルで指定する。
+　　　hWndParent = 作成されるウィンドウのオーナー、または親ウィンドウを指定する。
+　　　hMenu = メニューまたは子ウィンドウIDを指定する。HMENU型はメニューのハンドル。
+　　　hInstance = ウィンドウに関連付けられたインスタンスハンドルを指定する。
+　　　lpParam = WM_CREATWメッセージのlParamパラメータとして渡される構造体ポインタを指定する。
+
+・ShowWindow関数
+　　= ウィンドウの表示状態を変更する。
+
+　　BOOL ShowWindow(HWND hWnd, int nCmdShow);
+
+　　　hWnd = 対象となるウィンドウのハンドルを指定する。
+　　　nCmdShow = ウィンドウの表示状態を表す定数を指定する。SW_SHOWでウィンドウを表示。
+
+・CreateWindowEx関数
+　　= CreateWindow関数の機能をそのままにさらに拡張スタイルが指定できるようになったもの。
+
+　　HWND CreateWindowEx(
+        DWORD dwExStyle,
+        LPCTSTR lpClassName, LPCTSTR lpWindowName
+        DWORD dwStlye,
+        int x, int y, int nWidth, int nHeight,
+        HWND hWndParent, HMENU hMenu,
+        HANDLE hInstance, LPVOID lpParam
+)
+
+　　　dwExStyle = 拡張されたウィンドウスタイルを指定する。例えば、WS_EX_TOOLWINDOW で
+　　　　　　　　　タスクバーに表示されないタイトルバーが小さい「ツールウィンドウ」を作成できる。
+
+・WNDCLASS構造体型変数
+　　= ウィンドウクラスの登録を行う。これで定義したウィンドウクラスをCreateWindowで指定できる。
+　　　ウィンドウクラスの登録を行うには以下の型の変数を宣言し、初期化しなければならない。
+　　　そして初期化した時点ではまだウィンドウクラスは登録されておらず、次にここで初期化した変数をRegisterClass関数に渡す必要がある。
+　　　この関数にウィンドウクラスを渡して初めて登録される。WNDCLASSは以下のように定義されている。
+
+　　typedef struct _WNDCLASS {
+        UINT    style;
+        WNDPROC lpfnWndProc;
+        int     cbClsExtra;
+        int     cbWndExtra;
+        HANDLE  hInstance;
+        HICON   hIcon;
+        HCURSOR hCursor;
+        HBRUSH  hbrBackground;
+        LPCTSTR lpszMenuName;
+        LPCTSTR lpszClassName;
+} WNDCLASS;
+
+　　　style = ウィンドウクラスの基本スタイルを表す定数を指定する。
+　　　lpfnWndProc = ウィンドウプロシージャを設定する。WNDPROC型とは、ウィンドウプロシージャと呼ばれる関数のポインタ型。
+　　　　　　　　　　ウィンドウプロシージャとは、ウィンドウで発生したイベントを処理する関数。
+　　　cbClsExtra = クラス構造体の追加領域をバイト単位で予約する。通常はその必要が無いため、多くの場合ここは0を指定する。
+　　　cbWndExtra = ウィンドウ構造体の追加領域をバイト単位で予約する。通常はその必要が無いため、多くの場合ここは0を指定する。
+　　　hInstance = インスタンスハンドルを指定する。
+　　　hIcon = タスクバーやタイトルバーに表示される「アイコン」のビットマップを指定する。HICON型はアイコンのハンドル。
+　　　　　　　アイコンのビットマップを渡すにはLoadIcon関数を使用する。
+　　　hCursor = ウィンドウのクライアントエリア上のマウスカーソルを指定する。HCURSOR型とはカーソルのハンドル。
+　　　　　　　　定義済みのカーソルはLoadCursor関数で取得する。
+　　　hbrBackground = クライアントエリアの背景色を指定する。ここで渡すのはHBRUSH型のブラシのハンドル。
+　　　　　　　　　　　ブラシとはグラフィックスの概念。ブラシのハンドルはGetStockObject関数を使用する。
+　　　lpszMenuName = クラスメニューを指定する。
+　　　lpszClassName = このウィンドウクラスの名前。この値をCreateWindow関数の第一引数で指定する。
+
+・DefWindowProc関数
+　　= デフォルトウィンドウプロシージャを呼び出す。デフォルトウィンドウプロシージャは、
+　　　ウィンドウが持つ基本的なふるまいをサポートする。戻り値にはメッセージ処理の結果が返る。
+
+　　LRESULT DefWindowProc(
+        HWND hWnd,
+        UINT Msg,
+        WPARAM wParam,
+        LPARAM lParam
+);
+
+　　　hWnd = メッセージを受け取ったウィンドウのハンドルを指定する。
+　　　Msg = メッセージを指定する。
+　　　wParam = メッセージの追加情報を指定する。
+　　　lParam = メッセージの追加情報を指定する。
+
+・LoadIcon関数
+　　= アイコンのビットマップを渡す。WND構造体型変数のhIconで使用する。
+　　　インスタンスに関連付けられた実行ファイルからアイコンリソースをロードする。
+
+　　HICON LoadIcon(HINSTANCE hInstance, LPCTSTR lpIconName);
+
+　　　hInstance = アイコンのリソースが入っているモジュールのインスタンスを指定する。システム定義のアイコンの場合はNULLにする。
+　　　lpIconName = アイコンの名前を指定する。第一引数がNULLの場合は用意されているアイコンの定数を渡す。
+
+・LoadCursor関数
+　　= 定義済みのカーソルを取得する。WNDCLASSのhCursorで指定可能。
+
+　　HCURSOR LoadCursor(HINSTANCE hInstance, LPCTSTR lpCursorName);
+
+　　　hInstance = カーソルのリソースが入っているモジュールのインスタンスを指定する。システム定義のカーソルの場合はNULLを指定する。
+　　　lpCursorName = カーソルの名前を指定する。第一引数がNULLであれば、定義されているマウスカーソルの定数を指定する。
+
+・GetStockObject関数
+　　= 定義済みのブラシやフォントのハンドルを取得できる。WNDCLASSのhbrBackgroundで指定可能。この関数はブラシの他にも
+　　　ペン、パレットといったハンドルも取得できる。WNDCLASSのhbrBackgroundに指定できると書いたが、この関数の戻り値はHBRUSHではなく、
+　　　グラフィック関連のハンドルとなる「HGDIOBJ」型となる。
+
+　　HGDIOBJ GetStockObject(int fnObject);
+
+　　　fnObject = 取得したいハンドルの定数を指定する。
+
+・RegisteerClass関数
+　　= WNDCLASS構造体型変数で初期化した変数をこの関数に渡してウィンドウクラスに登録する。成功すると登録されたクラスを一意的に識別する
+　　　「アトム」というものが返る。失敗すると0が返ってくるため、基本的にエラーチェックするようにする。
+
+　　ATOM RegisterClass(CONST WNDCLASS *lpwcx);
+
+　　　lpwcx = WNDCLASS型の変数のポインタを渡す。
+
+・MSG構造体型変数
+　　= メッセージの管理を行う。この構造体はWINUSRE.Hで以下のように定義されている。
+　　　(実際には少し違ったりするため、直接ヘッダファイルを調べた方が良い)
+
+　　typedef struct tagMSG {
+        HWND    hwnd;
+        UINT    message;
+        WPARAM  wParam;
+        LPARAM  lParam;
+        DWORD   time;
+        POINT   pt;
+} MSG , * PMSG;
+
+　　　hwnd = メッセージを受けとる関数を持つウィンドウのハンドルが入る。メッセージを受け取る関数とは、ウィンドウプロシージャのこと。
+　　　message = メッセージを識別する整数が入る。
+　　　wParam = メッセージの付加情報が入る。
+　　　lParam = メッセージの付加情報が入る。
+　　　time = メッセージがポストされた時間。
+　　　pt = メッセージがポストされたときのカーソル位置を格納する。POINT型は構造体型で、WINDEF.Hで以下のように定義されている。
+
+　　　　typedef struct tagPOINT {
+                LONG x;
+                LONG y;
+        } POINT;
+
+・GetMessage関数
+　　= メッセージキューからメッセージを受け取る。この関数は、指定されたMSG構造体変数にメッセージを格納する。
+　　　戻り値は、通常は0以外の値TRUEを返す。WM_QUITというメッセージを受け取った時のみFALSE(0)を返す。エラーが発生したときは
+　　　-1を返すため、エラーチェックの時のみ数値で確認する。Windowsから常にメッセージを受け取るためにはこのGetMessage関数で繰り返し
+　　　メッセージを受け取る必要がある。
+
+　　BOOL GetMessage(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax);
+
+　　　lpMsg = MSG構造体変数のポインタを渡す。LPMSG型は構造体のポインタ型。
+　　　hWnd = メッセージを受け取るウィンドウのハンドルを渡す。アプリケーションで表示している
+　　　　　　　全てのウィンドウから受け取る場合はNULLを指定する。
+　　　wMsgFilterMin = 受け取るメッセージの最小値を指定することで、受け取るメッセージのフィルタリングを行う。
+　　　　　　　　　　　フィルタリングを行わない場合、0を指定する。
+　　　wMsgFilterMax = 受け取るメッセージの最大値を指定することで、受け取るメッセージのフィルタリングを行う。
+　　　　　　　　　　　フィルタリングを行わない場合、0を指定する。
+
+・DispatchMessage関数
+　　= 指定されたメッセージをウィンドウプロシージャに渡す。
+
+　　LONG DispatchMessage(CONST MSG *lpmsg);
+
+　　　lpmsg = Getmessage()で受け取ったメッセージを格納したMSG構造体変数のポインタを渡す。
+
+・ウィンドウプロシージャ型
+　　= ウィンドウプロシージャは、メッセージを処理する専用のルーチン。メッセージループで取得したメッセージを
+　　　ウィンドウプロシージャにディスパッチし受け取ったメッセージをウィンドウプロシージャで処理する。
+　　　ウィンドウプロシージャは複数あっても構わない。ウィンドウプロシージャはウィンドウクラスのlpfnWndProcにポインタを渡す。
+
+　　LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+
+　　　hwnd = メッセージが発生したウィンドウのハンドルを受け取る。
+　　　Msg = メッセージが入る。
+　　　wParam = メッセージの付加情報が入る。
+　　　lParam = メッセージの付加情報が入る。
+
+　プロシージャの名前は任意。LRESULT型は、コールバック関数やウィンドウプロシージャから返される32ビットの値。
+　CALLBACKはWINAPI同様に、呼び出し規約。この関数が返すべき値は、メッセージによって異なる。
+　引数はMSG構造体の最初の4つのメンバと同じ。
+
+・PostQuitMessage関数
+　　= 一般的に、終了処理に使用する。この関数はメッセージキューにWM_QUITメッセージをポストする。
+
+　　VOID PostQuitMessage(int nExitCode);
+
+　　　nExitCode = WM_QUITに渡されるパラメータ。この値は、WM_QUITメッセージのwParamパラメータになる。
+
+・DestroyWindow関数
+　　= DefWindowProc関数がWM_CLOSEを受け取った際に呼び出される関数。指定されたウィンドウを破棄する。
+　　　この関数はウィンドウM_DESTROYとWM_NCDESTROYメッセージをウィンドウに送る。両方とも同じメッセージで
+　　　パラメータは無く、返すべき値は0となる。戻り値は関数が成功すると0以外、失敗すると0になる。
+
+　　BOOL DestroyWindow(HWND hWnd);
+
+　　　hWnd = 破棄するウィンドウのハンドルを指定する。
+
+・CREATESTRUCT構造体
+　　= WM_CREATEメッセージのパラメータlParamにこの構造体へのポインタが含まれている。
+　　　頭にLPプレフィックスを付加したLPCREATESTRUCT型をプロシージャで受け取ることができる。
+　　　以下のように定義されている。dwExstyleから上に向かって、CreateWindowEx関数の引数と同じ。
+
+　　typedef struct tagCREATERESULT {
+        LPVOID  lpCreateParams;
+        HANDLE  hInstance;
+        HMENU   hMenu;
+        HWND    iwndParent;
+        int     cy;
+        int     cx;
+        int     y;
+        int     x;
+        LONG    style;
+        LPCSTR  lpszName;
+        LPCSTR  lpszclass;
+        DWORD   dwExstyle;
+} CREATESTRUCT;
+
+・GetDC関数 = 指定されたウィンドウのクライアントエリアに対するデバイスコンテキストのハンドルを取得する。
+　　　　　　　成功するとウィンドウのクライアントエリアのデバイスコンテキストのハンドルが、失敗するとNULLが返る。
+
+　　HDC GetDC(HWND hWnd);
+
+　　　hWnd = デバイスコンテキストを取得するウィンドウのハンドルを指定する。
+
+・ReleaseDC関数
+　　= デバイスコンテキストのハンドルを得た場合に解放する。このデバイスコンテキストのハンドル取得 → 解放の動作は
+　　　一つのサイクルとして行わなければならない。戻り値には解放されたときは1、されなかったときは0が返る。
+
+　　int ReleaseDC(HWND hWnd, HDC hDC);
+
+　　　hWnd = デバイスコンテキストに対応するウィンドウのハンドルを指定する。
+　　　hDC = 解放するデバイスコンテキストのハンドルを指定する。
+
+・TextOut関数 = 文字を表示するための関数で最もよく使われる。文字列を描画する。この関数はたとえクライアントエリアの幅が
+　　　　　　　　文字列より小さくなっても文字列は改行されることなく、クライアントエリアから途切れてしまう。
+
+　　BOOL TextOut(
+        HDC hdc,
+        int nXStart,
+        int nYStart,
+        LPCTSTR lpString,
+        int cbString
+);
+
+　　　hdc = getDCなどで取得したデバイスコンテキストのハンドルを指定する。
+　　　nXStart = 文字の開始位置のX軸を指定する。
+　　　nYStart = 文字の開始位置のY軸を指定する。
+　　　lpString = 表示する文字列へのポインタを指定する。
+　　　cbString = 文字列の文字数を指定する。
+
+・PAINTSTRUCT構造体
+　　= 無効リージョンを有効な状態にする際にアクセスする構造体。以下のように定義されている。
+
+　　typedef struct tagPAINTSTRUCT {
+        HDC     hdc;
+        BOOL    fErase;
+        RECT    rcPaint;
+        BOOL    fRestore;
+        BOOL    fIncUpdate
+        BYTE    rgbReserved[32];
+} PAINTSTRUCT;
+
+　　　hdc = 描画に使われるデバイスコンテキストを指定する。
+　　　fErase = 再描画の必要があるかどうかを判定する。このメンバが0以外の時は、背景を再描画する必要がある。
+　　　rcPaint = 描画が要求されている長方形をあらわす。このメンバのRECT型は構造体変数となっており定義は以下となる。
+　　　　typedef struct tagRECT {
+                LONG left;　→　左上隅のX座標
+                LONG top;　→　Y座標
+                LONG right;　→　右下隅のX座標
+                LONG bottom;　→　Y座標
+        } RECT;
+　　　
+　　　残りのメンバであるfRestore,fIncUpdate,,rgbReservedはWindowsが内部で使うもの。
+
+・BeginPaint関数
+　　= PAINTSTRUCTのポインタを受け取る。戻り値はデバイスコンテキストへのハンドルとなる。
+　　　WM_PAINTメッセージの処理にはgetDCではPAINTSTRUCT構造体にアクセスできないため、この関数を使用する。
+　　　この関数を使用した場合でもデバイスコンテキストを解放する必要がある。
+
+　　HDC BeginPaint(HWND hwnd, LPPAINTSTRUCT lpPaint);
+
+　　　hwnd = デバイスコンテキストへのハンドル。
+　　　lpPaint = PAINTSTRUCTへのポインタを指定する。
+
+・EndPaint関数
+　　= GDI関数の処理が終了した際にデバイスコンテキストを解放する。
+
+　　BOOL EndPaint(HWND hWnd, CONST PAINTSTRUCT *lpPaint);
+
+　　　hWnd = 再描画したウィンドウのハンドルを指定する。
+　　　lpPaint = BeginPaintで取得したPAINTSTRUCTへのポインタを指定する。
+
+・メトリックス構造体
+　　= フォントの詳細情報を持つ。TEXTMETRICS型。定義は以下の通り。
+
+　　typedef struct tagTEXTMETRIC {
+        LONG tmHeight;
+        →　キャラクタの高さ。事実上の改行は、現在のポジションからこの値を加算したもので実現する。tmAscent + tmDescentと等しい。
+        LONG tmAscent;
+        →　文字のベースラインよりも上の幅。アセント。ベースラインは英ローマ字4本線の内3本目の線となる。
+        LONG tmDescent;
+        →　文字のベースラインよりも下の幅。ディセント。
+        LONG tmInternalLeading;
+        →　テキストの行間のスペースの範囲。レディング。
+        LONG tmExternalLeading;
+        →　tmHeightには含まれないレディングの参照値。この値は基本的に無視する。
+        LONG tmAveCharWidth;
+        →　小文字の平均的な文字幅を表す。
+        LONG tmMaxCharWidth;
+        →　フォント内で最も幅の広い文字の幅を表す。
+        LONG tmWeight;
+        →　フォントの太さを表す0～999までの数値。
+        LONG tmOverhang;
+        →　太字や斜体時に付加される幅を表す。
+        LONG tmDigitizedAspectX;
+        →　フォントに適したアスペクト比の値を表す。
+        LONG tmDigitizedAspectY;
+        →　フォントに適したアスペクト比の値を表す。
+        BCHAR tmFirstChar;
+        →　フォントに含まれる先頭の文字の文字コード。
+        BCHAR tmLastChar;
+        →　フォントに含まれる最後の文字の文字コード。
+        BCHAR tmDefaultChar;
+        →　フォントに含まれないキャラクタの代用として使うキャラクタの値。
+        BCHAR tmBreakChar;
+        →　単語の間を表す文字のキャラクタの値を指定する。
+        BYTE tmItalic;
+        →　斜体フォントであれば0以外、そうでなければ0を指定する。
+        BYTE tmUnderlined;
+        →　下線付きフォントであれば0以外、そうでなければ0を指定する。
+        BYTE tmStruckOut;
+        →　打消し戦付きフォントであれば0以外、そうでなければ0を指定する。
+        BYTE tmPitchAndFamily;
+        →　下位4ビットでフォントの属性を表す。
+        BYTE tmCharSet;
+        →　フォントのキャラクタセットを表す。キャラクタセットについてはCreateFont()を参照。
+} TEXTMETRIC;
+
+・GetTextMetrics関数
+　　= TEXTMETRIC変数に現在のフォントの情報を取得する。成功すると0以外の値、失敗すると0を返す。
+
+　　BOOL GetTextMetrics(HDC hdc, LPTEXTMETRIC lptm);
+
+　　　hdc = デバイスコンテキストのハンドルを指定する。
+　　　lptm = TEXTMETRIC型変数へのポインタ。
+
+・SetTextColor関数
+　　= デバイスコンテキストの文字色を設定する。戻り値は、以前設定されていた色を返す。関数が失敗した場合、CLR_INVALIDが返る。
+
+　　COLORREF SetTextColor(HDC hdc, COLORREF crColor);
+
+　　　hdc = デバイスコンテキストのハンドルを指定する。
+　　　crColor = 文字色を表す32ビット整数を指定する。COLORREF型は色を表す32ビット型の整数。
+　　　　　　　　COLORREFは8ビット255までの数ずつで3原色を表す。下位8ビットが赤、9～16までが緑、
+　　　　　　　　17～24までが青の色となる。一般的には10進数よりも16進数で表す。
+
+・RGBマクロ = ビットレベルではなく、各色の数値を独立させて設定したい場合にこれを使用すると便利。BYTE型は1バイトの符号なし整数型。
+　　　　　　　戻り値は、引数をCOLORREF型に変換した32ビット値が返る。
+
+　　COLORREF RGB(BYTE bRed, BYTE bGreen, BYTE bBlue);
+
+　　　bRed = 赤の要素。
+　　　bGreen = 緑の要素。
+　　　bBlue = 青の要素。
+
+・GetClientRect関数
+　　= 現在のクライアントエリアのサイズ(座標)を得る。これとフォントメトリックスを計算しウィンドウサイズによって
+　　　動的な改行を実現することができる。
+
+　　BOOL GetClientRect(HWND hWnd, LPRECT lpRect);
+
+　　　hWnd = ウィンドウのハンドルを指定する。
+　　　lpRect = サイズを格納するRECT構造体へのポインタを指定する。左上の座標topとleftは必ず0になる。
+
+・DrawText関数
+　　= 指定された長方形に、指定された形式でフォーマットした文字列を表示する。
+
+　　int DrawText(
+        HDC hdc,
+        LPTSTR lpchText,
+        int cchText,
+        LPRECT lprc,
+        UINT dwDTFormat,
+);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　lpcsText = 表示する文字列。
+　　　cchText = 文字列の文字数。lpchTextで指定した文字列がNULLで終わっている場合は-1を指定することで文字数の計算を自動的に行う。
+　　　lprc = 表示する長方形の座標を表すRECT構造体へのポインタ。
+　　　dwDTFormat = テキストのフォーマット方法を示す定数。指定した長方形の中央に揃えるDT_CENTERや
+　　　　　　　　　 ウィンドウのサイズに合わせて改行するDT_WORDBREAKなどがある。
+
+・SaveDC関数
+　　= デバイスコンテキストを保存する。成功すればこのデバイスコンテキストのIDが、失敗すれば0が返る。
+
+　　int SaveDC(HDC hdc);
+
+　　　hdc = 属性を保存するデバイスコンテキストのハンドルを指定する。
+
+・RestoreDC関数
+　　= 保存したデバイスコンテキストの情報を得る。関数が成功すれば0以外、失敗すれば0が返る。
+　　　この関数はスタックのトップから指定されたデバイスコンテキストまでの情報を削除する。
+
+　　BOOL RestoreDC(HDC hdc, int nSavedDC);
+
+　　　hdc = 属性を設定するデバイスコンテキストのハンドルを指定する。
+　　　nSavedDC = 正数を指定するとデバイスコンテキストのIDと判断され、そのIDに対応したデバイスコンテキストを取得する。
+　　　　　　　　 このIDはSaveDCが返した値でなければならない。負数-nであれば、n回前にSaveDCで保存した
+　　　　　　　　 デバイスコンテキストが取得される。
+
+・SetBkColor関数
+　　= デバイスコンテキストの背景色を指定する。戻り値は以前設定されていた色を返す。失敗するとCLR_INVALIDが返る。
+
+　　COLORREF SetBkColor(HDC hdc, COLORREF crColor);
+
+　　　hdc = デバイスコンテキストのハンドルを指定する。
+　　　crColor = 背景色を表すCOLORREF型を渡す。
+
+・GetBkColor関数
+　　= 現在の背景色を得る。戻り値には成功すると現在の背景色、失敗するとCLR_INVALIDが返る
+
+　　COLORREF GetBkColor(HDC hdc);
+
+　　　hdc = デバイスコンテキストのハンドル。
+
+・SetBkMode関数
+　　= 背景モードを変更する。戻り値は以前の背景モードを表す数値だが、失敗すると0が返る。
+
+　　int SetBkMode(HDC hdc, int iBkMode);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　iBkMode = 背景モードを表す定数を指定する。描画前に背景色で背景を塗りつぶすOPAQUE(デフォルト)か
+　　　　　　　　背景色を塗りつぶさないようにする(背景を残す)TRANSPARENTのいずれかを指定する。
+
+・GetBkMode関数
+　　= 現在の背景モードを返す。戻り値には成功すると現在の背景モード、失敗すると0が返る。
+
+　　int GetBkMode(HDC hdc);
+
+　　　hdc = デバイスコンテキストのハンドル。
+
+・SetPixel関数
+　　= ピクセルをセットする。戻り値は設定した色が返るが、場合によっては近似値となる。失敗すると-1が返る。
+
+　　COLORREF SetPixel(HDC hdc, int X, int Y, COLORREF crColor);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　X = ウィンドウの左上端を原点としたX座標。
+　　　Y = ウィンドウの左上端を原点としたY座標。
+　　　crColor = 表示する点の色を指定する。
+
+・GetPixel関数
+　　= 指定座標のピクセルの色を取得する。戻り値にはRGB値となる。現在のクリッピング領域の外側の座標が指定されたときは
+　　　CLR_INVALIDが返る。
+
+　　COLORREF GetPixel(HDC hdc, int XPos, int nYPos);
+
+　　　hdc = デバイスコンテキストのハンドルを指定する。
+　　　XPos = X座標を指定する。
+　　　YPos = Y座標を指定する。
+
+・MoveToEx関数
+　　= カレントポジションを決定する。戻り値は関数が失敗すると0、成功すれば0以外の値が返る。
+
+　　BOOL MoveToEx(HDC hdc, int X, int Y, LPPOINT lpPoint);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　X = カレントポジションとなる座標を表すX座標を指定する。
+　　　Y = カレントポジションとなる座標を表すY座標を指定する。
+　　　lpPoint = 以前設定されていたカレントポジションが格納される。
+
+・LineTo関数
+　　= 現在のカレントポジションから終点までの線を描く。更にカレントポジションを終点に移動させる性質を持つ。
+　　　終点自体は描画されない。戻り値には関数が成功すると0以外、失敗すると0が返る。
+
+　　BOOL LineTo(HDC hdc, int nXEnd, int nYEnd);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　nXEnd = 線の終点となるX座標。
+　　　nYEnd = 線の終点となるY座標。
+
+・PolylineTo関数
+　　= カレントポジションを始点として連続したPOINT構造体の各変数の座標に線を描画する。
+
+　　BOOL PolylineTo(HDC hdc, CONST POINT *lppt, DWORD cCount);
+
+　　　hdc = デバイスコンテキストへのハンドル。
+　　　lppt = POINT構造体変数の配列へのポインタ。
+　　　cCount = 描画する線の数を指定する。lpptの長さに関わらず、
+　　　　　　　 ここで指定した値を情報に関数はlpptポインタにアクセスして描画しようとする。
+
+・Polyline関数
+　　= カレントポジションを指定しない。
+
+・PolyPolyline関数
+　　= 連続した線を複数に分けて描画する。つまり数本の線を離れて書くことができる。
+
+　　BOOL PolyPolyline(
+        HDC hdc,
+        CONST POINT *lppt,
+        CONST DWORD *lpdwPolyPoints,
+        DWORD cCount
+);
+
+　　　lpdwPolyPoints = 連続した線分が持つ点の数が格納されている配列のポインタを指定する。
+　　　　　　　　　　　　lpptの添え字0～2(3つ分)と3～6(4つ分)に分けたい場合は、CONST DWORD dw[] = { 3, 4 }のように
+　　　　　　　　　　　　3と4格納した配列をここで指定する。
+　　　cCount = 連続線分の総数を指定する。2つの連続線に分けるとしたら、2を指定すればよい。
+
+・Rectangle関数
+　　= 長方形を描画する。長方形は現在のペンで描かれ、現在のブラシで塗りつぶされる。
+
+　　BOOL Rectangle(
+        HDC hdc,
+        int nLeftRect, int nTopRect,
+        int nRightRect, int nBottomRect
+);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　nLeftRect = 長方形の左上X座標。
+　　　nTopRect = 長方形の左上Y座標。
+　　　nRightRect = 右下X座標。
+　　　nBottomRect = 右下Y座標。
+
+・Ellipse関数
+　　= 楕円形を描画する。戻り値と引数の内容はRectangleと一緒。
+
+・RoundRect関数
+　　= 角が丸い長方形を描画する。
+
+　　BOOL RoundRect(
+        HDC hdc,
+        int nLeftRect, int nTopRect,
+        int nRightRect, int nBottomRect
+        int nWidth, int nHeight
+);
+
+　　　nWidth = 角の横の丸みをつける幅を指定する。
+　　　nHeight = 丸みをつける縦幅。
+
+・Arc関数
+　　= 始点から終点まで反時計回りの楕円弧を描画する。
+　　　円の中心と(nXStartArc,nYStartArc)を結んだ直線の部分が弧の始点、円の中心と(nXEndArc,nYEndArc)を結んだ直線の部分が
+　　　弧の終点となる。Arcの場合は線描画のみで内面は塗りつぶされない。始点や終点の情報はデフォルトでは反時計回り(左回り)となる。
+
+　　BOOL Arc(
+        HDC hdc,
+        int nLeftRect, int nTopRect,
+        int nRightRect, int nBottomRect
+        int nXStartArc, int nYStartArc,
+        int nXEndArc, int nYEndArc
+);
+
+　　　nXStartArc = 外枠の始点のX座標。
+　　　nYStartArc = 外枠の始点のY座標。
+　　　nXEndArc = 外枠の終点のX座標。
+　　　nYEndArc = 外枠の終点のY座標。
+
+・Pie関数
+　　= 扇形を描画する。Arcと全く同じ意味の同じ引数を受け取る。
+
+・Chord関数
+　　= 弓型を描画する。Arcと全く同じ意味の同じ引数を受け取る。
+
+・PolyBezierTo関数
+　　= 1つ以上のベジェ曲線を描画する。開始点はカレントポジションを使用し、
+　　　最後に描画したベジェ曲線の終了点にカレントポジションを設定する。
+
+　　BOOL PolyBezierTo(HDC hdc, CONST POINT *lppt, DWORD cCount);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　lppt = ベジェ曲線の制御点を表すPOINT構造体へのポインタを指定する。
+　　　cCount = lpptの制御点の個数を指定する。
+
+・PolyBezier関数
+　　= カレントポジションの影響を受けない。
+
+・SelectObject関数
+　　= 指定されたデバイスコンテキストに指定されたオブジェクトを選択する。
+　　　この関数で設定されているペン属性を「カレントペン」とも呼ぶ。
+　　　戻り値には成功すると以前のオブジェクトのハンドルが返り、失敗するとNULLになる。
+　　　ただし、リージョンと呼ばれる属性を設定した場合は異なる。
+
+　　HGDIOBJ SelectObject(HDC hdc, HGDIOBJ hgdiobj);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　hgdiobj = 設定する描画オブジェクトのハンドルを指定する。
+
+・CreatePen関数
+　　= 指定されたスタイル、幅、色を持つペンオブジェクトを作成する。
+　　　戻り値には設定したペンオブジェクトを返す。
+
+　　HPEN CreatePen(int fnPenStyle, int nWidth, COLORREF crColor);
+
+　　　fnPenStyle = ペンのスタイルを表す定数を指定する。通常の線はPS_SOLID、破線のPS_DASHなどがある。
+　　　nWidth = ペンの幅をピクセルで指定する。0を指定すると常に1ピクセルになる。
+　　　crColor = ペンの色を指定する。
+
+・DeleteObject関数
+　　= ペン、ブラシ、フォント、ビットマップ、リージョン、パレットのいずれかのオブジェクトを削除し
+　　　オブジェクトに関連付けられていたシステムリソースを全て解放する。オブジェクトを削除すると、ハンドルは無効となる。
+　　　成功すると0以外、ハンドルが有効ではないなど失敗すると0が返る。ただし、決して選択中のGDIオブジェクトを削除してはいけない。
+　　　有効なデバイスコンテキストに設定されているオブジェクトを消してはいけない。
+
+　　BOOL DeleteObject(HGDIOBJ hObject);
+
+　　　hObject = 破棄するGDIオブジェクトを指定する。
+
+・CreatePenIndirect関数
+　　= LOGPRN構造体の論理ペンのハンドルを返す。CreatePen関数と引数は違うが内容は同じ。
+
+　　HPEN CreatePenIndirect(CONST LOGPEN *lplgpn);
+
+　　　lplgpn = LOGPEN構造体へのポインタを指定する。LOGPEN型は、CreatePenの引数と同じ意味の3つのメンバからなる。
+　　　　　　　 LOGPEN構造体の定義は以下の通り。
+
+　　　　typedef struct tagLOGPEN {
+                UINT    lopnStyle;
+                POINT   lopnWidth;
+                COLORREF lopnColor;
+} LOGPEN;
+
+　　　　　lopnStyle = ペンスタイルを指定する。
+　　　　　lopnWidth = ペンの太さを指定する。
+　　　　　lopnColor = ペンの色を設定する。
+
+・CreateSolidBrush関数
+　　= 純粋なブラシを生成するもっとも簡単な関数。
+
+　　HBRUSH CreateSolidBrush(COLORREF crColor);
+
+　　　crColor = ブラシの色を指定する。
+
+・CreateHatchBrush関数
+　　= ハッチブラシを作成する。
+
+　　HBRUSH CreateHatchBrush(int fnStyle, COLORREF clrref);
+
+　　　fnStyle = ハッチスタイルを表す定数を指定する。水平と垂直のクロスはHS_CROSS、45度のクロスはHS_DIAGCROSSとなる。
+　　　clrref = ブラシの色を設定する。
+
+・CreateBrushIndirect関数
+　　= 指定された論理ペン構造体のブラシハンドルを返す。
+
+　　HBRUSH CreateBrushIndirect(CONST LOGBRUSH *lplb);
+
+　　　lplb = LOGBRUSHへのポインタを指定する。LOGBRUSH構造体の定義は以下の通り。
+
+　　　　typedef struct tagLOGBRUSH {
+                UINT    lbStyle;
+                COLORREF lbColor;
+                LONG    lbHatch;
+} LOGBRUSH;
+
+　　　　　lbStyle = ブラシのスタイルを指定する。これによってハッチなどを無視するかどうかを決定する。
+　　　　　　　　　　通常のブラシならBS_SOLID、ハッチブラシならBS_HATCHEDなどがある。
+　　　　　　　　　　このほかにも、無効なブラシBS_NULLなどもある。
+　　　　　lbColor = ブラシの色を指定する。ビットマップなどの時は無視。
+　　　　　lbHatch = ハッチスタイルを指定する。ハッチ以外の時は無視。
+
+・SetROP2関数
+　　= 前景モード(ラスタオペレーション)の設定をする。戻り値は以前設定されていた前景モード、失敗したときは0を返す。
+
+　　int SetROP2(HDC hdc, int fnDrawMode);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　fnDrawMode = 前景モードを定数で指定する。デフォルトでは「R2_COPYPEN」となっており、
+　　　　　　　　　 これは画面の色に描画色を重ね、同色の場合はそのままにする。
+　　　　　　　　　 この動作を反転させるにはR2_NOTCOPYPENに設定する。すると、描画する色と反転した色になる。
+　　　　　　　　　 また、R2_XORPENなども非常に便利。これは、描画する色と画面の色が同じ場合はその色を反転するというもの。
+
+・GetROP2関数
+　　= 現在の前景モードを得る。
+
+　　int GetROP2(HDC hdc);
+
+　　　hdc = デバイスコンテキストのハンドル。
+
+・Polygon関数
+　　= 閉じた図形の多角形を描画する。始点と終点を最後に結ぶことで閉じた図形として描画される。
+　　　Polylineと異なり、内部はブラシによって塗りつぶされる。
+
+　　BOOL Polygon(HDC hdc, CONST POINT *lpPoints, int nCount);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　lpPoints = 多角形の角頂点の位置を表すPOINT配列へのポインタ。
+　　　nCount = 多角形の頂点の数を指定する。
+
+・SetPolyFillMode関数
+　　= 多角形塗りつぶしモードを設定する。戻り値は以前の塗りつぶしモードを返す。失敗すれば0が返る。
+
+　　int SetPolyFillMode(HDC hdc, int iPolyFillMode);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　iPolyFillMode = 定数ALTERNATEまたはWINDINGを指定する。デフォルトはALTERNATE。
+　　　　　　　　　　　ALTERNATEは多角形の内部で隣接しない部分を塗りつぶす。他の境界線と交差している内面は塗りつぶされない
+　　　　　　　　　　　WINDINGは多角形の交差する内面も通常は塗りつぶされる。しかし交差する線の方向が逆の場合は塗りつぶされない。
+
+・PolyPolygon関数
+　　= 複数の閉じた多角形を描画する。戻り値には成功すると0以外、失敗すると0が返る。
+
+　　BOOL PolyPolygon(
+        HDC hdc,
+        CONST POINT *lpPoints,
+        CONST INT *lpPolyCounts,
+        int nCount
+);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　lpPoints = 多角形の角頂点の位置を表した配列へのポインタを指定する。
+　　　lpPolyCounts = 各多角形の頂点の数が入った配列へのポインタを指定する。
+　　　nCount = 多角形の総数を指定する。
+
+・TranslateMessage関数
+　　= 仮想キーコードを実際の文字に変換する。メッセージキューに文字メッセージがポストされたときは0以外、
+　　　されなかったときは0の値が返る。この関数はメッセージループで呼び出すのが一般的となる。
+　　　WM_KEYDOWNメッセージが発生すると「WM_CHAR」メッセージを生成する。WM_CHARは、ウィンドウズプロシージャの
+　　　第三引数WPARAMに文字コードを渡す。LPARAMの値は変更しない(WM_KEYDOWNなどと同じ) このメッセージを処理した場合は0を返す。
+
+　　BOOL TranslateMessage(CONST MSG *lpMsg);
+
+　　　lpMsg = MSG構造体変数へのポインタを指定する。
+
+・GetKeyState関数
+　　= シフト状態やトグル状態などを知る。戻り値には指定したキーコードの状態が返る。最上位ビットMSBが1(つまり、負数が返れば)
+　　　ならばキーが押されている状態で、0であればキーは押されていない。また、最下位ビットLSBが1の時は、キーがトグル状態で
+　　　あることを表す。0であればトグルが解除されている(例えば、CapsLockキーがONなら、トグル状態)
+　　　ただし、この関数はリアルタイムでキーボードを監視するわけではない。これはメッセージ生成時までの状態を表す。
+　　　例えば、処理中にシフトキーが解放されたことについては興味を示さない。
+
+　　SHORT GetKeyState(int nVirtKey);
+
+　　　nVirtKey = 調べたいキーの仮想キーコード(定数)を渡す。これらの定数はWINUSER.Hファイルで確認することができる。
+　　　　　　　　 なお、数値や文字の場合はASCIIコードがそのまま仮想キーコードになっている。
+
+・CreateRectRgn関数
+　　= 矩形のリージョンを作成する。
+
+　　HRGN CreateRectRgn(
+        int nLeftRect, int nTopRect,
+        int nRightRect, int nBottomRect
+);
+
+　　　nLeftRect = 始点X座標。
+　　　nTopRect = 始点Y座標。
+　　　nRightRect = 終点X座標。
+　　　nBottomRect = 終点Y座標。
+
+・CreateRectRgnIndirect関数
+　　= RECT構造体を直接引数に渡す関数。
+
+　　HRGN CreateRectRgnIndirect(CONST RECT *lprc);
+
+・FillRgn関数
+　　= 指定されたブラシでリージョンを塗りつぶす。
+
+　　BOOL FillRgn(HDC hdc, HRGN hrgn, HBRUSH hbr);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　hrgn = 描画するリージョンのハンドルを指定する。
+　　　hbr = 塗りつぶすブラシのハンドルを指定する。
+
+・FrameRgn関数
+　　= リージョンの境界(枠)を描画したい場合に用いる。関数が成功すると0以外、失敗すると0が返る。
+　　　枠が描画されるため、内面は塗りつぶされない。
+
+　　BOOL FrameRgn(
+        HDC hdc,
+        HRGN hrgn,
+        HBRUSH hbr,
+        int nWidth, int nHeight
+);
+
+　　　hbr = 境界を描画するためのブラシのハンドルを指定する。
+　　　nWidth = 垂直方向の線の幅。
+　　　nHeight = 水平方向の線の幅。
+
+・PaintRgn関数
+　　= FillRgnと動作は同じだが、デバイスコンテキストに設定されているブラシを使用する。
+
+　　BOOL PaintRgn(HDC hdc, HRGN hrgn);
+
+・CreateEllipticRgn関数
+　　= 楕円のリージョンを生成する。引数はCreateRectRgnと同じで、指定した長方形に外接する楕円のリージョンを返す。
+
+　　HRGN CreateEllipticRgn(
+        int nLeftRect, int nTopRect,
+        int nRightRect, int nBottomRect
+);
+
+・CreateEllipticRgnIndirect関数
+　　= RECT構造体で楕円を指定する。
+
+　　HRGN CreateEllipticRgnIndirect(CONST RECT *lprc);
+
+・CreateRoundRectRgn関数
+　　= 角の丸い矩形をリージョンにする。
+
+　　HRGN CreateEllipticRgn(
+        int nLeftRect, int nTopRect,
+        int nRightRect, int nBottomRect
+        int nWidthEllipse, int nHeightEllipse
+);
+
+　　　nWidthEllipse = 角の丸みの幅。
+　　　nHeightEllipse = 丸みの高さ。
+
+・CreatePolygonRgn関数
+　　= 多角形のリージョンを生成する。
+
+　　HRGN CreatePolygonRgn(
+        CONST POINT *lppt,
+        int cPoints,
+        int fnPolyFillMode
+);
+
+　　　lppt = 多角形の各頂点が格納されているPOINT構造体への配列へのポインタ。
+　　　cPoints = 頂点の数を指定する。
+　　　fnPolyFillMode = 塗りつぶしモードを指定する。SetPolyFillModeで指定する定数と同じ。
+
+・CreatePolyPolygonRgn関数
+　　= 複数の多角形のリージョンを作成する。戻り値には成功するとリージョンのハンドル、失敗するとNULLが返る。
+
+　　HRGN CreatePolyPolygonRgn(
+        CONST POINT *lppt,
+        CONST INT *lpPolyCounts,
+        int nCount,
+        int fnPolyFillMode
+);
+
+　　　lppt = 多角形の角頂点の位置を表した配列へのポインタを指定する。
+　　　lpPolyCounts = 各多角形の頂点の数が入った配列へのポインタを指定する。
+　　　nCount = 多角形の総数を指定する。
+　　　fnPolyFillMode = 多角形の塗りつぶしモードを指定する。
+
+・InvalidateRect関数
+　　= 指定された長方形を更新領域として追加する。明示的に無効領域を作ることができる。
+　　　つまり、WM_PAINTを意図的に生み出すことができるということ？
+　　　戻り値は成功すれば0以外、失敗すれば0が返る。
+
+　　BOOL InbalidateRect(HWND hwnd, CONST RECT *lpRect, BOOL bErase);
+
+　　　hwnd = 無効化の対象となるウィンドウのハンドルを指定する。NULLを指定した場合、全てのウィンドウを無効化する。
+　　　lpRect = 無効化する長方形を表すRECT構造体のポインタを指定する。この引数をNULLにするとクライアント領域全体が対象になる。
+　　　bErase = TRUEにするとBeginPaintが呼び出されたときに背景を消去する。FALSEを指定すれば背景はそのまま残る。
+
+・InvalidateRgn関数
+　　= 指定されたリージョンを更新領域として追加する。
+
+　　BOOL InvalidateRgn(HWND hwnd, HRGN hRgn, BOOL bErase);
+
+　　　hwnd = 無効化の対象となるウィンドウのハンドル。
+　　　hRgn = 無効化する領域を表すリージョンを指定する。NULLを指定すれば領域全体が対象となる。
+　　　bErase = TRUEにするとBeginPaintが呼び出されたときに背景を消去する。FALSEを指定すれば背景はそのまま残る。
+
+・ValidateRect関数
+　　= 指定された長方形の無効領域を有効化する。戻り値には関数が成功すると0以外、失敗すると0が返る。
+
+　　BOOL ValidateRect(HWND hwnd, CONST RECT *lpRect);
+
+　　　hwnd = 対象となるウィンドウのハンドルを指定する。NULLを指定すると全てのクライアント領域を無効化して再描画する。
+　　　lpRect = 有効化する長方形を指定する。NULLを指定すると領域全体が有効化する。
+
+・ValidateRgn関数
+　　= 指定されたリージョンの無効領域を有効化する。
+
+　　BOOL ValidateRgn(HWND hwnd, HRGN hrgn);
+
+　　　hwnd = 対象となるウィンドウのハンドル。
+　　　hrgn = 有効化するリージョンのハンドルを指定する。
+
+・CombineRgn関数
+　　= 2つのリージョンを組み合わせて新しいリージョンを生成する。戻り値にはリージョンの生成結果を表す定数が返る。
+　　　これを調べることで、どのようなリージョンになったかを知ることができる。
+
+　　int CombineRgn(
+        HRGN hrgnDest,
+        HRGN hrgnSrc1, HRGN hrgnSrc2,
+        int fnCombineMode
+);
+
+　　　hrgnDest = 生成されたリージョンとなるリージョンのハンドルを指定する。子のリージョンは有効なリージョンでなければならない。
+　　　　　　　　 つまり、既にCreate…Rgnによって生成されDeleteObjectされていない状態。
+　　　hrgnSrc1 = 結合する1つのリージョン。
+　　　hrgnSrc2 = 結合するもう1つのリージョン。
+　　　fnCombineMode = 結合方法を表す定数を指定する。
+
+・GetDeviceCaps関数
+　　= デバイスの情報を得る。nIndexで指定したデバイスの情報が戻り値として返る。取得できる情報はサイズやデバイスの能力など様々。
+
+　　int GetDeviceCaps(HDC hdc, int nIndex);
+
+　　　hdc = デバイスコンテキストのハンドル。
+　　　nIndex = 取得したい情報を表す定数を指定する。
+
+・GetSystemMetrics関数
+　　= システムの情報を得る。戻り値は、nIndexで要求した情報。
+
+　　int GetSystemMetrics(int nIndex);
+
+　　　nIndex = 取得したい情報の定数を指定する。
+
+・GetSystemInfo関数
+　　= 低水準な情報を得る。
+
+　　VOID GetSystemInfo(LPSYSTEM_INFO lpSystemInfo);
+
+　　　lpSystemInfo = SYSTEM_INFO構造体へのポインタを指定する。
+
+・SYSTEM_INFO構造体
+
+　　typedef struct _SYSTEM_INFO {
+        union {
+                DWORD dwOemId;
+                struct {
+                        WORD wProcessorArchitecture;
+                        WORD wReserved;
+                };
+        };
+        DWORD   dwPageSize;　→　各メモリページのサイズ。
+        LPVOID  lpMinimumApplicationAddress;　→　
+        LPVOID  lpMaximumApplicationAddress;
+        DWORD   swActiveProcessorMask;
+        DWORD   dwNumberOfProcessors;
+        DWORD   dwProcessorType;　→　プロセッサの種類。
+        DWORD   dwAllocationGranularity;　→　メモリ割り当て単位を表す。このメンバを使い一部のメモリに関連した関数の引数を
+        　　　　　　　　　　　　　　　　　　　指定することがある。
+        WORD    wProcessorLevel;
+        WORD    wProcessorRevision;
+} SYSTEM_INFO;
+
+・GetVersionEx関数
+　　= OSの情報を得る。
+
+　　BOOL GetVersionEx(LPOSVERSIONINFO lpVersionInformation);
+
+　　　lpVersionInformation = OSVERSIONINFO構造体へのポインタを指定する。
+
+・OSVERSIONINFO構造体
+
+　　typedef struct _OSVERSIONINFO {
+        DWORD   dwOSVersionInfoSize;　→　この構造体のサイズを指定する。
+        DWORD   dwMajorVersion;　→　OSのメジャーバージョン
+        DWORD   dwMinorVersion;　→　OSのマイナーバージョンを指定する。
+        DWORD   dwBuildNumber;　→　Windowsの製造ナンバーが格納される。
+        DWORD   dwPlatformId;　→　OSの種類を表す定数が格納されている。
+        TCHAR   szCSDVersion[128];　→　OSに関連した追加情報を表す文字列。
+} OSVERSIONINFO;
+
+・LOWORDマクロ
+　　= 指定されたダブルワードの下位ワードを返す。
+
+　　WORD LOWORD(DWORD dwValue);
+
+　　　dwValue = 分割するダブルワードの値。
+
+・HIWORDマクロ
+　　= 指定されたダブルワードの上位ワードを返す。
+
+　　WORD HIWORD(DWORD dwValue);
+
+　　　dwValue = 分割するダブルワードの値。
+
+・GetCursorPos関数
+　　= マウスカーソルの現在位置を知る。戻り値には関数が成功すると0以外、失敗すると0が返る。
+
+　　BOOL GetCursorPos(LPPOINT lpPoint);
+
+　　　lpPoint = マウス座標を格納するポイント構造体へのポインタを指定する。この座標はスクリーン全体の座標となる。
+
+・SetCursorPos関数
+　　= マウスカーソルの位置をプログラムから変更する。
+
+　　BOOL SetCursorPos(int X, int Y);
+
+　　　X = スクリーン全体のX座標。
+　　　Y = スクリーン全体のY座標。
+
+・ShowCursor関数
+　　= マウスカーソルの表示、非表示を行う。マウスの表示は内部的に表示カウントが使用されており、
+　　　カウントが負数(0未満)の時は非表示にし、0以上であれば表示する。引数にTRUEを指定すれば内部カウントを
+　　　インクリメントしFALSEを指定すれば内部カウントをデクリメントする仕組みになっている。
+　　　戻り値には新しく設定したカウントの値を返す。
+
+　　int ShowCursor(BOOL bShow);
+
+　　　bShow = TRUEまたはFALSEを指定する。
+
+・SetCapture関数
+　　= マウスをキャプチャーする。戻り値は以前にマウスをキャプチャーしていたウィンドウのハンドルが返る。
+　　　そのようなウィンドウが無い場合はNULLとなる。マウスをキャプチャーした場合、キャプチャーの必要が無くなれば
+　　　ReleaseCapture関数で解放する必要がある。
+
+　　HWND SetCapture(HWND hWnd);
+
+　　　hWnd = マウスをキャプチャーするウィンドウのハンドルを指定する。
+
+・ReleaseCapture関数
+　　= マウスのキャプチャーを解放する。成功すると0以外、失敗すると0が返る。
+　　　ただし、マウスキャプチャーについてはWindowsが厳しく取り締まっており、
+　　　あくまでボタンの解放メッセージを受け取るものと考えるべき。
+
+　　BOOL ReleaseCapture(VOID);
+
+・PeekMessage関数
+　　= スレッドのメッセージキューにメッセージがあるかどうかをチェックし、あれば指定された構造体にそのメッセージを格納する。
+　　　デッドタイムを調べられる。最初の4つの引数はGetMessage関数と一緒。
+　　　GetMessageの代用として使用するなら、wRemoveMsgにPM_REMOVEを指定する。
+　　　戻り値にはメッセージを取得できたなら0以外、メッセージを取得できなかった、すなわちデッドタイムなら0となる。
+　　　これを利用してメッセージを取得したならばそのメッセージを処理し、そうでなければ他の処理時間に回すことが可能となる。
+
+　　BOOL PeekMessage(
+        LPMSG lpMsg,
+        HWND hwnd,
+        UINT wMsgFilterMin, UINT wMsgFilterMax,
+        UINT wRemoveMsg
+);
+
+　　　lpMsg = メッセージを格納するMSG構造体へのポインタ。
+　　　hwnd = メッセージを取得するウィンドウへのハンドル。
+　　　wMsgFilterMin = 受け取るメッセージの最小値。
+　　　wMsgFilterMax = 受け取るメッセージの最大値。
+　　　wRemoveMsg = メッセージの処理方法を表す定数を指定する。PM_NOREMOVEを指定するとメッセージを削除しない。
+　　　　　　　　　 PM_REMOVEならばメッセージをキューから削除する。
+
+・SetTimer関数
+　　= タイマーを指定したタイムアウト値で作成する。戻り値は関数が成功すると新しいタイマーIDが返され、失敗すると0が返る。
+
+　　UINT SetTimer(
+        HWND hwnd, UINT nIDEvent,
+        UINT uElapse,
+        TIMERPROC lpTimerFunc
+);
+
+　　　hwnd = 関連付けるウィンドウのハンドルを指定する。NULLにするとウィンドウには関連付けられないタイマーが作成される。
+　　　nIDEvent = 0以外の値を指定し、タイマーのIDを指定する。hwndがNULLならば無視する。
+　　　uElapse = タイムアウト値をミリ秒単位(1/1000秒)で指定する。この時間が経過するたびにメッセージを生成する。
+　　　lpTimerFunc = コールバック関数のポインタを指定する。これはメッセージキューにメッセージをポストするのではなく、
+　　　　　　　　　　指定時間が経過するごとに指定関数を実行させるという処理に使う。メッセージキューにポストさせたい場合は、
+　　　　　　　　　　この値をNULLに指定する。
+
+・TIMERPROC型
+　　= アプリケーション定義のコールバック関数。WM_TIMERを処理する。
+　　　TIMERPROC型のコールバック関数のポインタをSetTimer関数の第四引数に指定することで、
+　　　指定時間が経過するとWindowsが関数を呼び出すようになる。外部から呼び出される関数のためCALLBACKを宣言する。
+
+　　VOID CALLBACK TimerProc(
+        HWND hwnd, UINT uMsg,
+        UINT idEvent, DWORD dwTime
+);
+
+　　　hwnd = 関連付けられているウィンドウのハンドル。
+　　　uMsg = WM_TIMERメッセージが入る。
+　　　idEvent = タイマーのIDが入る。
+　　　dwTime = Windowsが起動してからの経過時間がミリ秒単位で入っている。
+
+・KillTimer関数
+　　= 指定したタイマーを破棄する。
+
+　　BOOL KillTimer(HWND hWnd, UINT uIDEvent);
+
+　　　hWnd = タイマーに関連付けられているウィンドウのハンドルを指定する。
+　　　uIDEvent = タイマーのIDを指定する。これはSetTimerの第二引数で設定した値と同じでなければいけないが、ウィンドウのハンドルを
+　　　　　　　　 NULLに設定していた場合はIDがないため、この時はSetTImerの戻り値を設定しなければならない。
+
+・SYSTEMTIME構造体
+　　= Win32で表される時間のデータ。
+
+　　typedef struct _SYSTEMTIME {
+        WORD wYear;　→　年
+        WORD wMonth;　→　月(1月 = 1)
+        WORD wDayOfWeek;　→　　曜日。日曜日から0、月曜日は1のように表す
+        WORD wDay;　→　現在日
+        WORD wHour;　→　現在時
+        WORD wMinute;　→　現在分
+        WORD wSecond;　→　現在秒
+        WORD wMilliseconds;　→　現在のミリ秒
+} SYSTEMTIME;
+
+・GetLocalTime関数
+　　= 時間を取得する。
+
+　　VOID GetLocalTime(LPSYSTEMTIME lpSystemTime);
+
+　　　lpSystemTime = SYSTEMTIME構造体のポインタを指定する。
+
+・GetSystemTime関数
+　　= 現在の協定世界時UTCを取得する。
+
+　　VOID GetSystemTime(LPSYSTEMTIME lpSystemTime);
+
+・SetScrollInfo関数
+　　= スクロールバーの各種設定を行う。戻り値にはスクロールバーの現在位置が返る。
+
+　　int SetScrollInfo(
+        HWND hwnd, int fnBar,
+        LPSCROLLINFO lpsi, BOOL fRedraw
+);
+
+　　　hwnd = ウィンドウのハンドル。
+　　　fnBar = 対象となるスクロールバーを指定する。例えば、水平ならSB_HORZ、垂直ならSB_VERT。
+　　　lpsi = スクロールバーの情報が入ったSCROLLINFO構造体へのポインタを指定する。
+　　　fRedraw = TRUEにするとバーを再描画し、FALSEだと再描画しない。
+
+・SCROLLINFO構造体
+　　= スクロールバーの情報が入る構造体。
+
+　　typedef struct tagSCROLLINFO {
+        UINT cbSize;
+        UINT fMask;
+        int nMin;
+        int nMax;
+        UINT nPage;
+        int nPos;
+        int nTrackPos;
+} SCROLLINFO;
+
+　　　cbSize = この構造体のサイズをバイト単位で格納する。これはsizeof演算子を用いてこのメンバに自分自身のサイズを代入すればよい。
+　　　fMask = SIF_ALL、SIF_PAGEなどの値をセットするかしないかを表すフラグを指定する。OR演算子で複数指定可能。
+　　　nMin = スクロールする最小値。
+　　　nMax = スクロールする最大値。
+　　　nPage = ページサイズと呼ばれる値を設定する。現在のWindowsスクロールバーはつまみの大きさが
+　　　　　　　クライアントエリアの大きさで変化する。ページサイズはこのスクロールバーのつまみの大きさを表す値で、
+　　　　　　　ページサイズと最大値(スクロール幅)が同じの時1:1の関係になる。ただし、スクロール幅が0～9としてページサイズが
+　　　　　　　10以上の場合スクロールバーは不要になってしまう。このときWindowsの習慣としてスクロールバーは削除されようとするが、
+　　　　　　　fMaskでSIF_DISABLENOSCROLLを指定していれば削除されることは無い。
+　　　nPos = スクロールバーのつまみ(スクロールボックス)の現在の位置。
+　　　nTrackPos = 現在のトラッキング位置だが、SetScrollInfoは無視する。
+
+・GetScrollInfo関数
+　　= スクロールバーの情報を取得する。
+
+　　BOOL GetScrollInfo(HWND hwnd, int fnBar, LPSCROLLINFO lpsi);
+
+　　　hwnd = ウィンドウまたはスクロールバーコントロールのハンドルを指定する。
+　　　fnBar = 対象とするスクロールバーを指定する。
+　　　lpsi = 情報を格納するSCROLLINFO構造体へのポインタを指定する。
+
+・SendMessage関数
+　　= メッセージを1つ、または複数のウィンドウに送る。戻り値はメッセージの処理結果で、メッセージによって異なる。
+　　　メッセージを直接ウィンドウプロシージャに送り、ウィンドウプロシージャが処理を終了するまで制御を戻せない。
+
+　　LRESULT SendMessage(
+        HWND hwnd, UINT Msg,
+        WPARAM wParam, LPARAM lParam
+);
+
+　　　hwnd = メッセージを受け取るウィンドウのハンドルを指定する。HWND_BROADCASTを
+　　　　　　　指定すると、全てのトップレベルのウィンドウにメッセージを送る。
+　　　Msg = 送信するメッセージ。
+　　　wParam = メッセージの各種パラメータ。
+　　　lParam = メッセージの各種パラメータ。
+
+・PostMessage関数
+　　= メッセージを指定したウィンドウのメッセージキューに送信し、プロシージャの処理に関わらず即座に制御を戻す。
+　　　基本的にポインタを送ってはいけない。いつ相手のウィンドウプロシージャがメッセージを処理してくれるかわからないため、
+　　　メッセージが処理される前にポインタがさすメモリが解放される可能性があるため。
+
+　　BOOL PostMessage(
+        HWND hwnd, UINT Msg,
+        WPARAM wParam, LPARAM lParam
+);
+
+　　　hwnd = メッセージを受け取るウィンドウのハンドル。ただし、HWND_BROADCASTや
+　　　　　　　NULLを指定すると特別な意味を持つ。
+　　　Msg = 送信するメッセージ。
+　　　wParam = メッセージの追加情報。
+　　　lParam = メッセージの追加情報。
+
+・

@@ -1,0 +1,9 @@
+C++ ゲーム作り プログラム集
+
+・D3D.m_deviceContext->ClearRenderTargetView(D3D.m_backBufferView.Get(), color);
+　　→　デバイスコンテキストに「バックバッファをこの色で塗りつぶして」と命令するプログラム。
+
+・D3D.m_swapChain->Present(1,0);
+　　→　バックバッファに書かれた内容をウィンドウに表示する命令。
+
+・

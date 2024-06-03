@@ -1,0 +1,216 @@
+MySQLコマンドなどメモ
+
+============================================================================================================================
+
+コマンドやコマンド例など
+
+show databases;
+　→ サーバーに現在どのようなデータベースが存在するかを調べる。
+
+create database データベース名;
+　→ データベースを作成する。
+
+use データベース名
+　→ データベースにアクセスする。セミコロンが不要、1行で完結させるといった点に注意。
+
+select database();
+　→ 現在選択しているデータベースを表示する。
+
+show tables;
+　→ データベースが保持しているテーブルの一覧を表示する。
+　　この結果で表示される「Tables_in_〇〇」の〇〇はデータベース名となっているため、
+　　データベース名を参照したい時にも便利。
+
+create table テーブル名 (列名1 列のデータ型, 列名2 列のデータ型…);
+　→ テーブルのレイアウトを指定する。
+
+describe テーブル名;
+　→ テーブルのレイアウトを表示する。
+
+load data local infile 'ファイルパス' into table テーブル名;
+　→ テーブルにファイルからデータをロードする。MySQL8.0からデフォルトでできなくなっているので注意。
+　　Windowsでは　LINES TERMINATED BY '\r\n';　が必要。
+
+　　concurrent = load dataの実行中に、他のスレッドがこのテーブルからデータを取り出すことができる。
+　　ignore 数値 lines = ファイルの先頭にある行を無視するのに使用される。
+
+　　以下にテンプレを置いておく。(区切り文字は // としている)
+
+　　　load data local infile 'C:\\Users\\Owner\\Java_Program\\ApplyPartSystem_1\\MySQL勉強\\event.txt' into table event FIELDS TERMINATED BY '//' LINES TERMINATED BY '\r\n';
+
+set global システム変数名=ステータス;
+　→ システム変数の設定を一時的に変更する。
+　　サーバーが終了すると変更したシステム変数は元の設定に戻る。
+
+set persist システム変数名=ステータス;
+　→ システム変数の設定を永続的に変更する。set persist_onlyとすると、即座に反映は行われず、
+　　次にMySQLを再起動したときに反映される。
+
+insert into テーブル名 values ('値1','値2', …);
+　→ テーブルに新しいレコードを追加する。左の列から順に値1,値2と格納していく。
+
+selectステートメント
+　→ テーブルの内容を取り出す。一般的な形式は以下の通り。
+
+　　　select what_to_select = 取得する対象。カラムのリストか、「全てのカラム」を表す * を指定できる。
+　　　from which_table = データを取り出すテーブルを指定する。
+　　　where conditions_to_satisfy; = オプション。name = 'tatle'でnameがtatleのレコードを表示する、など。
+
+　　具体的なコマンド例を以下に書いていく。
+
+　　　select * from テーブル名;
+　　　　→ テーブルの全ての内容を取り出す。ただし、テーブルに非表示カラムが含まれている場合、
+　　　　　*には非表示カラムは含まれない。
+
+　　　select * from tableName where name = 'tatle';
+　　　　→ テーブルの特定のレコードを取り出す。
+
+　　　select * from pet where birth >= '1990-01-01';
+　　　　→ テーブルから条件に合ったレコードを取り出す。
+
+　　　select * from pet where species = 'cat' and sex = 'f';
+　　　　→ AND演算子を用いて複数条件を満たしたレコードを取り出す。
+　　　　　OR演算子も用いることができる。ANDとORは一緒に使用できるが、ANDはORよりも高い優先順位を
+　　　　　持っているため、両方の演算子を一緒に使用する場合は、()を使用して
+　　　　　条件の組み合わせ方を明示的に示した方が良い。
+
+　　　select name from pet;
+　　　　→ テーブルから特定の列を取得する。複数指定する場合は指定する列を,で区切る。
+　　　　　nameの前にdistinctオプションをつけると、重複したレコードを1回だけ表示するようにする。
+
+　　　select * from pet order by birth;
+　　　　→ order byオプションをつけることでソートできる。この場合はbirthが古い順から表示されていく。
+
+　　　select * from pet order by owner, birth desc;
+　　　　→ ownerをデフォルトの昇順でソートして表示し、同じownerの場合は誕生日の降順で表示している。
+　　　　　descオプションは降順で表示するオプション。descはその直前のカラム名にだけ適用される。
+
+　　　select name, birth, curdate(), timestampdiff(year,birth,curdate()) as age from pet;
+　　　　→ timestampdiff()関数を用いて年齢を表示している。
+
+　　　select name, birth, death, timestampdiff(year,birth,death) as age from pet where death is not NULL order by age;
+　　　　→ deathの欄がNULLでない(亡くなった)子の生前の年齢を表示している。NULLは通常の比較演算子を使用して
+　　　　　比較することができない特殊な値であるため、death <> NULL ではなく、death is not NULL を使用している。
+
+　　　select name, birth from pet where month(birth) = '8';
+　　　　→ 8月が誕生月の子を探している。
+
+　　　select name, birth from pet where month(birth) = month(date_add(curdate(),interval 1 month));
+　　　　→ 現在が何月であっても、来月が誕生月の子を抽出する。
+　　　　　現在が12月の場合でも、date_add関数を使っているため13月のようなおかしなことにはならない。
+
+　　　select name, birth from pet where month(birth) = mod(month(curdate()),12) + 1;
+　　　　→ 1つ上と同じ結果(来月が誕生月の子)を返す。
+　　　　　このようにモジュロ関数(MOD)を適用する方法でも1つ上のコマンドと同じような結果を返すことができる。
+　　　　　ただし、モジュロ関数は例えば12を指定すると0～11までの数値を返すため、mod()のあとで加算を行う
+　　　　　必要がある点に注意する。
+
+　　　select * from pet where name like 't%';
+　　　　→ SQLパターン一致を使用して、name が t から始めるレコードを抽出している。
+
+　　　select * from pet where name like '%e';
+　　　　→ SQLパターン一致を使用して、name が e で終わるレコードを抽出している。
+
+　　　select * from pet where name like '___';
+　　　　→ SQLパターン一致を使用して、name が三文字のレコードを抽出している。
+
+　　　select * from pet where regexp_like(name,'^[cf]');
+　　　　→ 正規表現パターン一致を使用して、name の先頭文字が c,f のレコードを抽出している。
+
+　　　select * from pet where regexp_like(name,'fumo');
+　　　　→ 正規表現パターン一致を使用して、name に fumo を含むフィールドを抽出している。
+　　　　　SQLパターンではこの探し方はできない。
+
+　　　select count(*) from pet;
+　　　　→ petテーブルの行数を表示する。
+
+　　　select owner, count(*) from pet group by owner;
+　　　　→ ownerが所有している子(自身がownerであるテーブルの行数)の数を表示する。
+　　　　　group byをつけると、グループごとのレコード数を取得できる。
+
+　　　select species, sex, count(*) from pet group by species, sex;
+　　　　→ 種と性別の組み合わせごとの子の数を表示する。
+
+　　　select species, sex, count(*) from pet where species = 'dog' or species = 'cat' group by species, sex;
+　　　　→ 1つ上の処理を犬と猫だけを対象にして行う。
+
+　　　select pet.name,timestampdiff(year,birth,date) as age,
+    　-> remark
+    　-> from pet inner join event
+    　-> on pet.name = event.name
+    　-> where event.type = 'litter';
+
+　　　+--------+------+---------------------------+
+　　　| name   | age  | remark                    |
+　　　+--------+------+---------------------------+
+　　　| Fluffy |    2 | 4 kittens,3 female,1 male |
+　　　| Buffy  |    5 | 3 puppies,3 female        |
+　　　| Buffy  |    4 | 5 puppies,2 female,3 male |
+　　　+--------+------+---------------------------+
+
+　　　　→ 各ペットの出産時の年齢を調べるために、生年月日をpetテーブルから、
+　　　　　出産日をeventテーブルから取り出し、出産時の年齢を表示している。
+　　　　　最初でpet.nameとしているのに、birthとdateは同じような指定をしていない理由は、
+　　　　　birthカラムはpetテーブルにしかなく、dateカラムはeventテーブルにしかないため
+　　　　　カラム名を指定すればどのテーブルのどのデータかわかるが、一方nameカラムは
+　　　　　petテーブルとeventテーブルのどちらにもあるため、カラム名を指定しただけでは
+　　　　　どのテーブルのnameカラムを使用したいのかがわからない。そのため、nameの前にはpet.をつけている。
+
+　　　　　このクエリーでは両方のテーブルから情報を取り出す必要があるため、from句で2つのテーブルを結合している。
+
+　　　　　複数のテーブルの情報を組み合わせる(結合する)場合、1つのテーブルと他のテーブルのレコードが
+　　　　　どのように対応するかを指定する必要がある。両方のテーブルにnameカラムがあるため、
+　　　　　on句を使用して2つのテーブルのレコードをname値に基づいて対応させている。
+
+　　　　　このクエリーはinner joinを使用してテーブルを結合している。
+　　　　　inner joinでは、on句で指定された条件を両方のテーブルが満たす場合に限って、結果にテーブルの行が許可される。
+　　　　　この例では、petテーブルのnameカラムとeventテーブルのnameカラムが一致する必要があるとon句で指定している。
+　　　　　一方のテーブルに名前が表示され、他方のテーブルには表示されない場合、on句の条件が失敗するため、結果に行は表示されない。
+
+　　　select p1.name, p1.sex, p2.name, p2.sex, p1.species
+    　-> from pet as p1 inner join pet as p2
+    　-> on p1.species = p2.species
+    　-> and p1.sex = 'f' and p1.death is null
+    　-> and p2.sex = 'm' and p2.death is null;
+
+　　　+--------+------+-------+------+---------+
+　　　| name   | sex  | name  | sex  | species |
+　　　+--------+------+-------+------+---------+
+　　　| Fluffy | f    | Claws | m    | cat     |
+　　　| Buffy  | f    | Fang  | m    | dog     |
+　　　+--------+------+-------+------+---------+
+
+　　　　→ テーブル内のあるレコードと違うレコードを比較する。
+　　　　　このクエリーでは、テーブル名のエイリアスを指定してカラムを参照し、
+　　　　　各カラムがテーブルのどちらのインスタンスに関連するかを必ず明確にしている。
+　　　　　p1,p2というのは「パーティション」と呼ばれるもので、同一テーブル内でデータを分けるようなことをする。
+
+delete from テーブル名;
+　→ テーブルの全ての内容を消去する。
+
+update テーブル名 set 変更するフィールド名 = '変更後の値' where 検索するフィールド名 = '一致する値';
+　→ 該当するレコードだけを変更する。例としては以下の通り。
+　　update pet set birth = '1989-08-31' where name = 'fluffy';
+
+show warnings;
+　→ 警告を表示する。
+
+select database();
+　→ 現在選択しているデータベースを返す。どのデータベースも選択していない場合、結果はNULLになる。
+
+
+
+============================================================================================================================
+
+関数、演算子一覧
+
+timestampdiff(単位,日付1,日付2)
+　→ 日付1と日付2の差異を指定した単位で表示する。
+
+regexp_like(検索フィールド名,(BINARY),'正規表現パターン',('c'))
+　→ 拡張正規表現を使用する。BINARYオプションをつけると、大文字小文字を区別する。
+　　c一致制御文字もBINARYと同じ働きをする。
+
+rlike演算子
+　→ regexp_like()のシノニム(シノニムとは？)。
+

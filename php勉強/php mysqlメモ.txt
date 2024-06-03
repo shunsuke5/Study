@@ -1,0 +1,213 @@
+php mysqlメモ
+
+メモ
+
+・MySQLi あるいは PDO_MySQLを使用してMySQLとやり取りを行う。
+
+・これらの関数を有効にするには、拡張サポートを有効にしてphpをコンパイルする必要がある。
+　Windowsの場合、php_mysqli.dll を php.ini で有効にする必要がある。その他のphp拡張モジュールを有効にするときと同様、
+　phpのディレクティブ extension_dir を設定してphp拡張モジュールのある場所を指定する必要がある。extension_dir の値は、
+　たとえば c:\php-sdk\ext のようになる。これは一応変更してみた。
+　　→ 
+
+・httpd.confの末尾のphpの設定で、PHPIniDir PHPIniDir "C:\php-sdk\" としていたのを "C:\php-sdk\php.ini-development" に変更してみた。
+　設定ファイルが開発用(develop)と本番用(product)の2つあるので、ファイル名まで指定しなければ実行時にどちらが実行されるかわからないと
+　判断したため。
+　　→ 
+
+・とりあえずこれでmysqliの関数を書いてブラウザでリロードしてみて、例のエラーが出てこなかったらちゃんと設定を読み込めているはず。
+
+・php.ini-devlopment の extension=mysqli のコメントを外した。
+　　→ mysqli" not found in のエラーが消えた。これでmysqliは使えるはず。
+　　　参考サイト　→　https://qiita.com/kajitack/items/1cc0075af808b6703691
+
+・セキュリティ上の注意:SQLインジェクション
+
+　クエリに入力値を含める場合は、「プリペアドステートメント」を使うべき。使わない場合、データを適切にフォーマットし、全ての文字列は
+　mysqli_real_escape_string() を使ってエスケープしなければいけない。
+
+・とりあえず以下のコードを書いてみたところ、無事想定通りの出力が得られたため、データベースには接続できた。
+
+    <?php
+    echo "こんにちは。";
+    $mysqli = new mysqli("localhost", "root", "shun5959", "test");
+    $result = $mysqli->stat();
+    echo $result;
+    $mysqli->close();
+
+・php.iniのmysqli.default 設定ディレクティブを設定することで、mysqliクラスのコンストラクタに渡す引数のデフォルトを決めることができる。
+　default_host,default_user など。これはプログラムで指定した方が良いのか設定ファイルを変えてしまった方が良いのかはまだわからない。
+
+・SQLインジェクションとは、例えば商品の検索欄にユーザーが入力した値を用いてSQLデータベースから検索する場合、
+　'select * from items where name = ' . $name;　のように、ユーザーの入力値を受け取って動的にSQL文を生成する場合、
+　例えば apple' のようにシングルクォートを入れたり、apple; union all select mail_address as id, password as name from users';
+　のように、不正な値を入力されてしまうと文法エラーが起きたり個人(機密)情報の流出の原因となってしまうようなサイバー攻撃のこと。
+
+　これを防ぐには「ステークホルダ」と「プリペアドステートメント」を用いて「バインド」しなければならない。それぞれの説明は以下の通り。
+
+    プレースホルダ
+    　→ 実際の内容を後から挿入するために、とりあえず仮に確保した場所のこと。「バインド変数」と呼ぶこともある。
+
+    プリペアドステートメント
+    　→ 直訳すると「予約語」と言う意味。あらかじめ実行するクエリを予約する。この時プレースホルダを用い、
+    　　クエリにユーザー入力を後から挿入する場所を指定することができる。
+
+    バインド
+    　→ プレースホルダに実際の値を割り当てること。
+
+　プレースホルダによる組み立ては、バインドをいつ行うのかによって以下の2種類に分けることができる。
+
+    静的プレースホルダ
+    　→ プレースホルダのままのSQL文をデータベースエンジン側にあらかじめ送信して、実行前にSQL分の構文解析などの準備をしておく方式。
+    　　SQL実行の段階で実際のパラメータの値をデータベースエンジン側に送信し、データベースエンジン側がバインド処理する。
+    　　アプリケーションでは同じSQL文をパラメータの値を変えながら繰り返し実行することが多いため、構文解析などの準備を事前にしておく
+    　　ことによって、実行効率を高くできる利点がある。ただし、データベースエンジンやライブラリによってはサポートされていない場合がある。
+
+    　　静的プレースホルダでは、SQL文の構文がバインド前に確定することから、プレースホルダに渡す文字列はクォートして記述する必要が無い。
+    　　そのため、シングルクォートのエスケープ処理も必要ない。また、数値リテラルもそのまま適切にバインドされる。
+
+    　　このことから、セキュリティの観点で静的プレースホルダは最も安全である。静的プレースホルダでは、SQLを準備する段階でSQL分の構文が
+    　　確定し、後からSQL構文が変化することが無いため、パラメータの値がリテラルの外にはみ出す現象が起きない。
+    　　その結果として、SQLインジェクションの脆弱性が生じない。
+
+    動的プレースホルダ
+    　→ プレースホルダを利用するものの、パラメータのバインド処理をデータベースエンジン側で行うのではなく、アプリケーション側の
+    　　ライブラリ内で実行する方式。
+
+・mysqliよりもpdoを学習した方が良い気がしてきた。理由としては、単純にどのデータベースでも利用できる関数だから。
+
+・pdoで静的プレースホルダを行うには、エミュレートをoffにする必要がある。これは、PDOのコンストラクタの引数で
+　PDO::ATTR_EMULATE_PREPARES => false のように指定する必要がある。
+　とりあえず引数のオプションには array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_EMULATE_PREPARES => false)
+　を指定すると良さそう。これが何を意味するのかは後で調べる。
+
+・php.iniでextension=pdo_mysql のコメントを外し、phpinfo()の「PDO drivers」でmysqlが有効化されていることを確認した。
+
+・insert into fruit values ('apple','red');　このクエリを基にphpでデータを挿入するプログラムを記述していく。
+
+・
+
+================================================================================================================================
+
+クラス、関数、定数など
+
+PDOクラス
+
+　定数
+
+    ATTR_EMULATE_PREPARES
+    　→ プレースホルダを静的か動的か指定する。
+
+　関数
+
+    __construct(string $dsn, ?string $username = null, #[\SensitiveParameter] ?string $password = null, ?array $options = null)
+    　→ 指定されたデータベースへの接続を表すPDOインスタンスを生成する。
+
+    setAttribute(int $attribute, mixed $value): bool
+    　→ データベースハンドルの属性を設定する。attribute に変更する属性、value にattributeに設定する値を指定する。
+    　　成功した場合にtrue,失敗した場合にfalseを返す。
+
+    prepare(string $query, array $options = []): PDOStatement | false
+    　→ PDOStatement::execute()メソッドによって実行されるSQLステートメントを準備する。
+    　　ステートメントのテンプレートは、文が実行される時に実際の値に置き換えられる0個もしくはそれ以上の名前(:name)もしくは疑問符(?)
+    　　パラメータマークを含むことができる。:name と ? パラメータを同一のステートメントのテンプレート中で使用することはできない。
+    　　ユーザーの入力をバインドする際には、これらのパラメータを使う。
+
+    query(string $query, ?int $fetchMode = null): PDOStatement | false
+    　→ プレースホルダを指定せずに、一回のコールでSQLステートメントを準備して実行し、結果をPDOStatementオブジェクトとして返す。
+    　　あらかじめ実行する文が決まっているなど、SQLインジェクションの心配がない時に使用する。
+    　　SQLインジェクションの対策が必要な場合はprepare(),bindValue(),execute()を用いる。
+
+PDOStatementクラス
+
+　定数
+
+　関数
+
+    execute(?array $params = null): bool
+    　→ プリペアドステートメントを実行する。params は実行されるSQL文の中のバインドパラメータと同数の要素からなる、値の配列。
+    　　全ての値はPDO::PARAM_STR として扱われる。一つのパラメータに対して複数の値をバインドしたり、
+    　　指定した数よりも多い値をバインドすることはできない。
+    　　もしプリペアドステートメントがパラメータマーカーを含む場合、以下のいずれかを行う。
+
+            ・パラメータマーカにphp変数や値をバインドするため PDOStatement::bindParam() や PDOStatement::bindValue() をコールする。
+            　関連付けされたパラメータマーカがあれば、バインドされた変数は入力値を渡す、もしくは出力値を受け取る。
+
+            ・あるいは、入力専用のパラメータ値の配列を渡す
+
+    fetch(int $mode = PDO::FETCH_DEFAULT, int $cursorOrientation = PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed
+    　→ PDOStatementオブジェクトに関連付けられた結果セットから1行を取得する。mode パラメータは、PDOがその行をどのように返すかを決定する。
+
+    fetchAll(int $mode = PDO::FETCH_DEFAULT): array
+    fetchAll(int $mode = PDO::FETCH_COLUMN, int $column): array
+    fetchAll(int $mode = PDO::FETCH_CLASS, string $class, ?array $constructorAtgs): array
+    fetchAll(int $mode = PDO::FETCH_FUNC, callable $callback): array
+    　→ 結果セットに残っている全ての行を含む配列を返す。この配列は、カラム値の配列若しくは各カラム名に対応するプロパティを持つ
+    　　オブジェクトとして各行を表す。取得結果がゼロ件だった場合は空の配列を返す。
+
+mysqli_stmtクラス
+
+　execute(?array $params = null): bool
+　　→ プリペアドステートメントを実行する。
+
+mysqli_resultクラス
+
+　data_seek(int $offset): bool
+　　→ 結果セットの任意の行 offset にポインタを移動する。
+
+　fetch_assoc(): array | null | false
+　　→ 結果セットから1行を取得し、それを連想配列として返す。値を取得した後は、この関数をコールするたびに
+    　結果セットの次の行の値を返す。もう結果セットに行が無い場合にはnullを返す。
+
+
+
+================================================================================================================================
+
+[進捗]
+HTMLフォームで送信された入力値をデータベースに保存する
+PDOコンストラクタに指定する
+　PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION について調べる
+
+[完了]
+php.iniを編集し、pdo_mysqlドライバを有効化する
+MySQLで打って無事結果が返ってくるselectコマンドを
+　PDOクラスのprepare()に渡す
+PDOでMySQLにステートメントを実行し、取得した結果を表示する
+プリペアドステートメントのプレースホルダに
+　変数の値をバインドしてから実行する
+データベースに情報をinsertする
+
+やりたいこと
+
+・簡単な認証システムを作る。
+
+・Webページのフォームに入力した内容をデータベースへ登録する。
+
+・
+
+================================================================================================================================
+
+エラーやミス、躓いたことなど
+
+・PDOでデータベース接続をしようとすると、以下のエラーが出る。
+　Fatal error: Uncaught PDOException: could not find driver in
+　　→ PDO driverが読み込まれていないことが原因。使用したいpdoドライバが読み込まれているかどうかは
+　　　phpinfo()で「PDO」欄の「PDO drivers」の記載を確認すればわかる。ドライバを読み込みたい場合は、
+　　　php.iniの設定で extension=pdo_mysql のように使用したいドライバを有効化する。
+　　　参考にしたサイト　https://pentan.info/server/pdo_could_not_find_driver.html
+
+・以下のコードを実行すると、SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax;
+　check the manual that corresponds to your MySQL server version for the right syntax to use near ''pet'' at line 1
+　のエラーが出る。
+
+    $stmt = $dbh->prepare("SELECT * FROM :tableName");
+    $stmt->bindValue(":tableName", $tableName, PDO::PARAM_STR);
+    $stmt->execute();
+    $result = $stmt->fetchAll();
+    print_r($result);
+
+　　→ 調べてみると、プリペアドステートメントはカラムの値にしか適応できないようである。
+　　　試しにカラムの値にしてみると、無事プレースホルダに値をバインドしてSQL文を実行することができた。
+　　　参考サイト　→　https://qiita.com/MasaKu_n/items/3207d8537c86abac098b
+
+・

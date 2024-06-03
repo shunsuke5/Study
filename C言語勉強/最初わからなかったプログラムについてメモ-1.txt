@@ -1,0 +1,27 @@
+#include <stdio.h>
+#include <string.h>
+
+int main(void)
+{
+    int len, i;
+    char str1[256], str2[] = "DRAGONQUEST";
+
+    scanf("%s", str1);
+
+    len = strlen(str2);
+
+for (i = 0; i < len + 1; i++) {
+        if (str1[i] != str2[i]) break; /*ここで1文字ずつ一致しているかを確認している*/
+    }
+    
+    /*forを抜けた後に文字数が一緒であれば完全一致*/
+    if (i == len + 1) {
+        printf("同じ\n");
+    } else {
+        printf("違う\n");
+    }
+
+最初このプログラムを見た時に、for文のところで引っ掛かり、単なる文字数の比較では？
+なぜ文字列同士の中身まで単純な数値で比較できている？と疑問に思ったが、
+str1[i]は文字変数、つまり整数型と変わらないため文字が違えば文字コードの違いであぶり出せる。
+そしてforから脱した場合にコメントの通り文字数が一緒ならその2つは完全一致となる。

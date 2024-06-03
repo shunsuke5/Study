@@ -1,0 +1,826 @@
+httpd.confメモ
+
+・Apacheにphpモジュールを読み込むための設定を行った。
+
+・複数の拡張子のあるファイル
+
+　ファイルは複数の拡張子を持つことができ、拡張子の順番は通常は関係ない。例えば、ファイルwelcome.html.fr がコンテントタイプは
+　text/htmlに、言語はフランス語にマップされる場合、welcome.fr.html も全く同じ情報にマップされる。同じメタ情報にマップされる
+　拡張子が複数ある時には、言語とコンテントエンコーディングを除いて、右側にあるものが使用される。
+　たとえば、.gifがMIMEタイプimage/gifにマップされ、.htmlがMIMEタイプtext/htmlにマップされる場合は、ファイルwelcome.gif.html は
+　MIMEタイプtext/html に関連付けられる。
+
+　リソースに複数の言語やエンコーディングを関連付けることができるため、言語とコンテントエンコーディングは前のものに追加されていく。
+　たとえば、ファイルwelcome.html.en.de はContent-Language: en, de と Content-Type: text/html として送信される。
+
+　複数の拡張子のあるファイルがMIMEタイプとハンドラの両方に関連付けられている時は注意する必要がある。
+　その場合、普通はリクエストがハンドラに関連付けられたモジュールによって扱われることになる。
+　たとえば、拡張子.imapが(mod_imagemapの)imap-fileにマップされていて、.htmlがMIMEタイプtext/htmlにマップされている時は、
+　ファイルworld.imap.html はimap-fileハンドラとtext/html MIMEタイプに関連付けられる。
+　ファイルが処理される時はimap-fileハンドラが使用されるので、そのファイルはmod_imagemap のイメージマップファイルとして扱われることになる。
+
+　ファイル名のドット区切りでの最後の部分を使って、特定の部分のメタデータにマッピングしたい場合は、Addディレクティブは使わないようにする。
+　たとえば、foo.html.cgi をCGIスクリプトとして処理したいけれども、bar.cgi.htmlはCGIスクリプトとしては処理したくない場合、
+　AddHandler cgi-script .cgi とする代わりに以下のようにする。
+
+　　<FilesMatch \.cgi$>
+        SetHandler cgi-script
+    </FilesMatch>
+
+・カスタムログ書式(mod_log_configより)
+
+　LogFormatディレクティブとCustomLogディレクティブの書式を指定する引数は文字列。この文字列を使ってそれぞれのリクエストが
+　ログファイルにログ収集される。その文字列にはログファイルにそのまま書かれる文字列や、それぞれ改行とタブを表すC言語形式の制御文字
+　\nと\tとを含めることができる。そのまま出力させたい引用符とバックスラッシュはバックスラッシュでエスケープする必要がある。
+
+　リクエストの特徴そのものは%ディレクティブを書式の文字列に書くことでログ収集される。
+　%ディレクティブはログファイル中では以下のような値で置換される。(一部抜粋。詳しくはmod_log_configページへ)
+
+　　%% → パーセント記号   %a → リモートIPアドレス   %A → ローカルIPアドレス     %B → レスポンスのバイト数。HTTPヘッダは除く。
+　　%f → ファイル名       %h → リモートホスト       %H → リクエストプロトコル   %m → リクエストメソッド
+　　%T → リクエストにかかった時間。秒単位           %U → リクエストされたURLパス %X → 応答が完了したときの接続ステータス。(X,+,-の3つがある)
+
+　修飾子
+
+　特定の要素は%の直後にHTTPステータスコードをカンマ区切りで指定することで、表示を制限することができる。
+　例えば、%400,501{User-agent}i では、400と500番エラーでのみUser-agentをログする。他のステータスコードでは
+　 - と言う文字列がログされる。ステータスコードのリストは以下のように ! で否定を指定することができる。
+　%!200,304,302{Referer}i は、指定された3つのコードのどれにも該当しないリクエスト全てでRefererをログする。
+
+　修飾子 < と > は内部リダイレクトされたリクエストのログに元のリクエストか最終的なリクエストのどちらを使用するかを指定するために使う。
+　デフォルトでは、%ディレクティブの%s,%U,%T,%D,%rは元のリクエストを、他は最終的なリクエストを使用する。
+　例えば、リクエストの最終ステータス記録するには %>s を、内部的に認証されていないリソースへリダイレクトされたリクエストで
+　元のリクエストで認証されたゆーざろ記録するためには %<u を使うことができる。
+
+　その他注意点
+
+　セキュリティ上の理由により2.0.46より、%r,%i,%oに入っている、印字う可能な文字と他の特別な文字は、\xhh という形式の文字列で
+　エスケープされるようになった。hhはそのままのバイトの値の16進での値である。この規則の例外には、バックスラッシュを使ってエスケープされる
+　" と \ と、C形式の表記法が使われる空白文字(\n,\tなど)がある。2.0.46以前のバージョンではエスケープ処理は行われないので、
+　生ログファイルを扱う際に注意が必要である。
+
+　httpd2.0では1.3とは異なり、%bと%Bフォーマット文字列はクライアントに送信されたバイト数そのものではなく、HTTPレスポンスのバイト数
+　(これらは異なるもので、例えば、コネクションが途中で破棄された場合や、SSL使用時に一致しない)。mod_logioで提供されている%o
+　フォーマット文字列で、ネットワーク経由で実際に転送されたバイト数を記録できる。
+
+　よく使われるフォーマット文字列
+
+    Common Log Format(CLF)
+        "%h %l %u %t \"%r\" %>s %b"
+
+    バーチャルホスト付きCommon Log Format
+        "%v %h %l %u %t \"%r\" %>s %b"
+
+    NCSA extended/combined ログ書式
+        "%h %l %u %t \"%r\" %>s %b" \"%{Referer}i\" \"%{User-agent}i\""
+
+    Refererログ書式
+        "%{Referer}i -> %U"
+
+    Agent(ブラウザ)ログ書式
+        "%{User-agent}i"
+
+　セキュリティに関して
+
+　ログファイルが保存されているディレクトリがサーバを起動した以外のユーザで書き込み可能な時に
+　セキュリティの問題が発生する理由の詳細は
+　「https://httpd.apache.org/docs/current/misc/security_tips.html#serverroot」を参照する。
+
+============================================================================================================================
+
+設定用ディレクティブ
+
+Define
+　→ コア機能。
+
+DirectoryIndex
+　→ クライアントが、ディレクトリ名の最後に「/」を指定してディレクトリインデックスを要求する場合に
+　　探すリソースのリストを設定する。mod_dirモジュール。
+
+<IfModule>
+　→ モジュールが存在する時に処理されるディレクティブを指定するために利用する。
+　　指定したモジュールがApacheに組み込まれていれば(コンパイル済みのものと、LoadModuleを利用して動的に読み込んだものの両方)、
+　　開始と終了の間のディレクティブが処理される。!を付けた場合は逆で、モジュールが組み込まれていない場合に処理される。
+
+　　module引数は、モジュール識別しかコンパイルをしたときのモジュールのファイル名である。
+　　例えば、rewrite_module は識別子で、mod_rewrite.c はファイル名である。
+　　モジュールが複数のソースファイルから構成されている場合は、文字列STANDARD20_MODULE_STUFF があるファイルの名前を使用する。
+
+　　<IfModule>セクションは入れ子にすることが可能。
+
+　　<IfModule [!]module-file|module-identifier>
+    ...
+    </IfModule>
+
+Listen
+　→ サーバがlistenするIPアドレスとポート番号を指定する。デフォルトでは全てのIPインターフェースのリクエストに応答する。
+　　必須のディレクティブのため、設定ファイルになければサーバは起動に失敗する。
+
+　　Listen [IP-address:]portnumber [protocol]
+
+<VirtualHost>
+　→ 特定のバーチャルホストに対してのみ適用されるディレクティブ群を括るために使われる。
+　　バーチャルホストコンテキストで許可される全てのディレクティブを指定可能。サーバが指定されたバーチャルホストにある
+　　ドキュメントへのリクエストを受け付けた場合、<VirtualHost>セクションの中にあるディレクティブが適用される。
+
+    <VirtualHost addr[:port] [addr[:port]] ...>
+    ...
+    </VirtualHost>
+
+Include
+　→ サーバの設定ファイル(httpd.conf)から他の設定ファイルをインクルードすることができる。
+　　ディレクトリを指定した場合は、ディレクトリとそのサブディレクトリ内の全てのファイルをアルファベット順に読み込んで、
+　　設定ファイルとして処理する(しかしこの方法は推奨されない。httpdが読み込みに失敗するような一時ファイルをディレクトリに
+　　残してしまうようなことが良くあるため。)
+
+    Include file-path|directory-path
+
+<IfDefine>
+　→ 起動時に条件が真であるときのみに処理されるディレクティブを囲む。
+　　<IfDefine>セクションに含まれるディレクティブは、parameter-nameが定義されている時のみ処理される。
+　　もしparameter-nameが定義されていなければ、その中で指定したディレクティブは無視される。
+　　否定演算子!をつけた場合、parameter-nameが定義されていない場合に、その中で指定されたディレクティブが処理される。
+
+    <IfDefine [!]parameter-name>
+    ...
+    </IfDefine>
+
+TypesConfig
+　→ MIMEタイプ設定ファイルの位置を設定する。file-pathはServerRootからの相対パスである。
+　　MIMEタイプ設定ファイルは、ファイルの拡張子からコンテントタイプへのデフォルトのマッピングを設定する。
+　　このディレクティブで主要なメディアタイプの定義を提供し、必要なところをAddType で上書きする、と言う方法がよい。
+　　mime.typesはサーバをアップグレードしたときに置き換えられる可能性があるため、そのファイルを直接編集しないようにする。
+
+    TypesConfig file-path
+
+AddType
+　→ 与えられた拡張子を指定されたコンテントタイプにマップする。
+
+    AddType MIME-type extension [extension] ...
+
+LoadModule
+　→ filename というオブジェクトファイルおよびライブラリをリンクし、
+　　module という名前のモジュールの構造をアクティブなモジュールのリストに追加する。
+　　Moduleはファイル中のmodule型の外部変数の名前で、モジュールのドキュメントに「モジュール識別子」として書かれているもの。
+
+    LoadModule module filename
+
+<Directory>
+　→ 指定されたディレクトリとそのサブディレクトリにのみディレクティブを適用させる。
+　　この中には、ディレクトリコンテキストで許可された全てのディレクティブを利用できる。
+　　directory-pathは、フィルパスもしくはUnixのシェル形式のワイルドカードを指定する。
+
+　　また、<Directory ~ ...> のように、~ を指定することで正規表現を利用することもできる。
+　　そうした場合は、マージの順番が1番ではなく2番となる。(<DirectoryMatch>と同じ)
+
+    <Directory directory-path>
+    ...
+    </Directory>
+
+<DirectoryMatch>
+　→ <Directory>と同様に、指定されたディレクトリとそのサブディレクトリにのみ適用されるディレクティブ群を囲う。
+　　ただし、このディレクティブは引数として正規表現を取る。
+
+    <DirectoryMatch regex_directory-path>
+    ...
+    </DirectoryMatch>
+
+<Files>
+　→ マッチするファイル名に適用されるディレクティブを囲む。このセクション中のディレクティブは、
+　　ベース名(ファイル名の最後の部分)が指定されたファイルにマッチする全てのオブジェクトに適用される。
+　　<Files>セクションは、<Directory>セクション内にネストさせることができ、ファイルシステムの一部にのみ限定して適用させることができる。
+
+    <Files filename>
+    ...
+    </Files>
+
+<FilesMatch>
+　→ <Files>ディレクティブ同様にその中にあるディレクティブの適用範囲をファイル名で制限する。
+　　ただし、子のディレクティブには正規表現を使用する。
+
+    <FilesMatch regex_filename>
+    ...
+    </FilesMatch>
+
+<Location>
+　→ マッチするURLのみにディレクティブを適用する。<Location>ディレクトリが複数ある場合は、設定ファイルに現れた順に処理される。
+　　<Location>セクションは完全にファイルシステムと関連せずに動作する。このことから導かれる結果にはいくつか注意する点がある。
+　　最も重要なのは、ファイルシステムの位置へのアクセス制御に<Location>ディレクティブを使うべきではない、ということ。
+　　複数のURLがファイルシステムの同じ位置にマップされる可能性があるので、そのようなアクセス制御は回避されてしまう可能性がある。
+
+　　<Location>を使うタイミングとしては、ファイルシステム外のコンテンツにディレクティブを適用する時に使用する、といったタイミングになる。
+　　ファイルシステムに存在するコンテンツに対しては、<Directory>と<Files>を使用する。
+　　ただし、<Location />は例外で、これはサーバ全体に対して設定を適用する簡単な方法である。
+
+    <Location URL-path|URL>
+    ...
+    </Location>
+
+<LocationMatch>
+　→ <Location>の正規表現版。
+
+    <LocationMatch regex_URL-path|regex_URL>
+    ...
+    </LocationMatch>
+
+<Proxy>
+　→ プロキシされるリソースに適用されるコンテナ。マッチするプロキシされるコンテンツにのみディレクティブを適用する。
+　　シェル形式のワイルドカードが使用可能。
+　　例文では、yournetwork.example.com のホストにのみプロキシサーバを経由したアクセスを許可している。
+
+    <Proxy wildcard-url>
+    ...
+    </Proxy>
+
+　　例：<Proxy *>
+            Order Deny,Allow
+            Deny from all
+            Allow from yournetwork.example.com
+        </Proxy>
+
+Action
+　→ action-typeがリクエストされたときにcgi-scriptが実行されるという動作を追加する。
+　　cgi-scriptはScriptAlias や AddHandler によってCGIスクリプトに設定されたリソースへのURL-pathである。
+　　Action-typeにはhandler か MIMEコンテントタイプを指定できる。リクエストされたドキュメントのURLとファイルのパスは
+　　標準CGI環境変数PATH_INFO と PATH_TRANSLATED を使って伝えられる。特定のリクエストに対して使用されるハンドラへは、
+　　REDIRECT_HANDLER変数を使って渡せる。
+
+    Action action-type cgi-script [virtual]
+
+AddHandler
+　→ 拡張子extensionが名前にあるファイルは指定されたhandler-nameに扱われる。
+　　この新しいマッピングは既にあるほかのマッピングに追加され、同じ拡張子extensionのためのマッピングを上書きする。
+　　たとえば例文は、拡張子.cgiで終わるファイルをCGIスクリプトとして扱いたい時の設定である。
+
+    AddHandler handler-name extnsion [extension]...
+
+　　例：AddHandler cgi-script .cgi
+
+ForceLanguagePriority
+　→ 要求にあうドキュメントを1つだけ返すことができないときに、LanguagePriorityディレクティブを使ってネゴシエーションの結果を返す。
+　　Preferは、同等の選択肢がいくつかあるときに、HTTPの300(MULTIPLE CHOICES)を返す代わりに、LanguagePriorityを使って
+　　1つだけドキュメントを返すようにする。
+　　Fallbackでは、HTTP406(NOT ACCEPTABLE)を送信する代わりに、LanguagePriorityが正しい結果を送る。
+
+    ForceLanguagePriority None|Prefer|Fallback [Prefer|Fallback]
+
+LanguagePriority
+　→ MultiViewsリクエストを扱う時に、クライアントが優先順位を提供していない場合の言語の優先順位を設定する。
+　　MIME-langのリストが優先度の降順に並ぶ。
+　　例文では、例えばfoo.htmlがリクエストされ、foo.html.frとfoo.html.deが両方存在し、
+　　ブラウザが言語の優先順位を提供していない場合はfoo.html.frが返される。
+
+　　このディレクティブは他の方法で最善の言語が決定できないときか、ForceLanguagePriorityディレクティブが「None」以外のときにのみ
+　　効果があることに注意する。一般的には、サーバ側ではなくクライアント側で好みの言語を決定する。
+
+    LanguagePriority MIME-lang [MIME-lang]...
+    
+    例：LanguagePriority en fr de
+
+SetEnv
+　→ 環境変数を設定し、それをCGIスクリプトとSSIページに渡すようにする。
+
+    SetEnv enc-variable value
+
+    例：SetEnv SPECIAL_PATH /foo/bin
+
+SetEnvIf
+　→ リクエストの属性に基づいて環境変数を定義する。最初の引数で指定できるattributeは以下の4つのどれか。
+　　1．HTTPリクエストヘッダフィールド。例えば、Host,User-Agent,Referer,Accept-Languageである。
+　　　 リクエストヘッダの集合を表すために正規表現を使うこともできる。
+　　2．以下のリクエストの一部分のどれか
+        Remote_Host → リクエストを行っているクライアントのホスト名(もしあれば)
+        Remote_Addr → リクエストを行っているクライアントのIPアドレス
+        Server_Addr → リクエストを受け取ったサーバのIPアドレス(2.0.43以降のみ)
+        Request_Method → 使用されているメソッドっ名(GET,POSTなど)
+        Request Protocol → リクエストが行われたプロトコルの名前とバージョン(例えば、HTTP/0.9,HTTP/1.1など)
+        Request_URI → URLのスキームとホストの後の部分。追加の情報として、クエリーストリングにマッチさせる場合については
+        　　　　　　　ReweriteCondディレクティブを参照する。
+　　3．リクエストと関連付けられる環境変数のリスト。これによりSetEnvIfディレクティブが以前のマッチの結果を使うことができるようになる。
+　　　 この方法のテストでは前の部分にあるSetEnvIf[NoCase]の結果のみを使用可能。「前」とは、より広い範囲に対して定義されている
+　　　 (サーバ全体のように)か、現在のディレクティブの範囲でより前の部分で定義されているか、ということ。環境変数である可能性は、
+　　　 リクエストの特性に対するマッチが存在せず、attributeに正規表現が使われなかった時にのみ考慮される。
+　　4．SSLクライアント証明書拡張への参照で、oidオブジェクトIDで指定されるもの。SSLリクエストでない場合や、
+　　　 oidが設定されていなかった場合はそれらの文字列はカンマ区切りで連結される。oidは文字列が価格庁への参照でなければならない。
+
+　　2つ目の引数は正規表現。これはregexがattributeにマッチする場合は、残りの引数が評価される。
+　　残りの引数は設定する変数の名前で設定される値を指定することもできる。これは、
+　　1．varname
+　　2．!varname
+　　3．varname=value
+　　のどれかの形式になる。最初の形式では値は1に設定される。2つ目はもし値が定義されていればそれを取り除く。
+　　3つ目は変数をvalueの与えられた値に設定する。2.0.51以降では、value内に$1..$9が存在すればそれを認識し、
+　　regexの対応する丸カッコで囲まれた部分で置換する。
+
+　　例文1行目は、リクエストがgif画像であるときに環境変数object_is_imageを設定している。
+　　2行目は、参照元のページがウェブサイトwww.mydomain.example.comにあるときにintra_site_referralを設定する。
+　　3行目は、環境変数NeascapeCommentを定義して、その値がSSLクライアント証明書の対応するフィールドの文字列であるようにする。
+　　ただしSSLクライアント証明書の対応するフィールドに文字列が存在する時にのみ、環境変数は設定される。
+
+    SetEnvIf attribute regex [!]env-variable[=value] [[!]env-variable[=value]]...
+
+    例：SetEnvIf Request_URI "\.gif$" object_is_image=gif
+        SetEnvIf Referer www\.mydomain\.example\.com intra_site_referral
+        SetEnvIf OID("2.16.840.1.113730.1.13") "(.*)" NetscapeComment=$1
+
+PassEnv
+　→ httpdプロセスを起動したシェルの環境からCGIスクリプトとSSIページに渡す環境変数を1つ以上指定する。
+
+    PassEnv env-variable [env-bariable] ...
+
+    例：PassEnv LD_LIBRARY_PATH
+
+Header
+　→ HTTP応答ヘッダを置換、追加、削除などの設定を行う。ヘッダはコンテントハンドラや出力フィルタが実行された直後に実行され、
+　　出ていくヘッダを変更できるようになっている。オプションのconditionはonsuccessかalwaysのどちらかを指定できる。
+　　これは内部ヘッダテーブルのどれを操作するかを決定する。onsuccesは2xxステータスコードの、
+　　alwaysは全てのステータスコード(2xxを含む)の意味になる。あるモジュールでセットされるヘッダをアンセットしたい場合は特に、
+　　どのテーブルがどの影響を受けるかを実際に試した方が良いだろう。
+
+　　行う処理は2番目の引数で決まる。この引数には以下の値を指定できる。
+    set
+　　　→ 応答ヘッダを設定する。同じ名前のヘッダが存在する場合はそれを置き換える。
+　　　　valueにはフォーマット文字列を指定することもできる。
+　　append
+　　　→ 応答ヘッダを既に存在する同じ名前のヘッダに追加する。新しい値が既存のヘッダに追加される時には、
+　　　　既存のヘッダの後にコンマで区切られて追加される。これはヘッダに複数の値を指定する時のHTTPの標準の方法である。
+
+　　add
+　　　→ ヘッダが既に存在している時でさえも、応答ヘッダを既存のヘッダに追加する。
+　　　　これにより、2つ(かそれ以上)のヘッダの名前が同じになることがある。その結果、想定できないことが起こる可能性があるので
+　　　　一般的にはappendの方を使う方が良いだろう。
+
+　　unset
+　　　→ もし指定された名前の応答ヘッダが存在していれば、削除される。同じ名前のヘッダが複数ある時は、すべて削除される。
+　　　　valueをつけてはいけない。
+
+　　echo
+　　　→ 指定されたものと同じ名前のリクエストヘッダをう応答ヘッダでそのまま返す。headerには正規表現も指定できる。
+　　　　valueをつけてはいけない。
+
+　　この引数の後にはヘッダ名(header)が続く。ヘッダ名には最後にコロンを含めることもできるが、なくても構わない。
+　　set,append,add,unsetでは大文字小文字は区別されない。echoのheader名は大文字小文字を区別し、正規表現を指定することもできる。
+
+　　add,append,setではvalueを3つ目の引数として指定する。valueに空白がある場合は二重引用符で囲む必要がある。
+　　valueは文字のみからなる文字列、フォーマット指示子を含む文字列、もしくは両方からなる文字列を指定できる。
+　　valueは以下のフォーマット指示子をサポートする。
+
+　　%t → リクエストを受け取った時刻を、Universal Coordinated Timeでの始まりの時刻(Jan,1,1970)から経過した時間を
+　　　　 マイクロ秒として表したもの。値の最初にはt=が付加される。
+　　%D → リクエストを受け取った時刻と、ヘッダを送り出した時間との差。これは、リクエストが存在していた期間を表す。
+　　　　 値の最初にはD=が付加される。
+　　%{FOOBAR}e → 環境変数FOOBARの値。
+　　%{FOOBAR}s → mod_sslが有効な場合、SSL環境変数FOOBARの内容。2.1以降でのみ利用できる。
+
+    Header [condition] set|append|add|unset|echo header [value]
+
+BrowserMatch
+　→ SetEnvIfの特例で、User-Agent HTTPリクエストヘッダに基づいて環境変数を設定する。例文の2行の結果は同じになる。
+
+    BrowserMatch regex [!]env-variable[=value] [[!]env-variable[=value]] ...
+    例：BrowserMatchNoCase Robot is_a_robot
+        SetEnvIfNoCase User-Agent Robot is_a_robot
+
+ErrorLog
+　→ サーバに生じた様々なエラーを記録するためのファイルの名前を設定する。
+　　file-pathが絶対パスでないときは、ServerRootからの相対パスと見なされる。
+
+　　file-pathがパイプ|から始まる場合は、エラーログを処理するために実行されるコマンドが指定されていると解釈される。
+
+    ErrorLog file-path|syslog[:facility]
+    例：ErrorLog /var/log/httpd/error_log
+
+LogLevel
+　→ エラーログへ記録するメッセージの冗長性を調整する。以下のlevelを指定でき、順に重要度が下がっていく。
+
+　　emerg
+　　　→ 緊急、システムが利用できない
+　　　　例：Chile cannot open lock file. Exiting(子プロセスがロックファイルを開けなかった)
+
+　　alert
+　　　→ 直ちに対処が必要
+　　　　例：getpwuid:couldn't determine user name from uid (getpwuid:UIDからユーザ名を特定できなかった)
+
+　　crit
+　　　→ 致命的な状態
+　　　　例：socket:Failed to get a socket, exiting chile (socket: ソケットが得られないため、子プロセスを終了させた)
+
+　　error
+　　　→ エラー
+　　　　例：Premature end of cript headers (スクリプトのヘッダが足りないままで終わった)
+
+　　warn
+　　　→ 警告
+　　　　例：chile process 1234 did not exit, sending another SIGHUP (子プロセス1234が終了しなかった。もう一度SIGHUPを送る)
+
+　　notice
+　　　→ 普通だが、重要な情報
+　　　　例：httpd: caught SIGBUS,attempting to dump core in... (httpd:SIGBUSシグナルを受け、...へコアダンプした)
+
+　　info
+　　　→ 追加情報
+　　　　例："Server seems busy,(you may needo to increase StartServers, or Min/MaxSpareServers)..."
+　　　　　　(サーバは負荷が高い、StartServersやMin/MaxSpareServersの値を増やす必要があるかも)
+
+　　debug
+　　　→ デバッグメッセージ
+　　　　例："Opening config file..." (設定ファイルを開いている)
+
+　特定のレベルが指定された場合、それより高いレベルの全てのメッセージが報告される。
+　例えば、LogLevel infoに指定すると、noticeとwarnも報告される。
+　なおcrit以上のレベルを指定することが推奨される。
+
+    LogLevel level
+
+LogFormat
+　→ アクセスログファイルの書式を指定する。このディレクティブは2つの形式のどちらかを取ることができる。
+
+　　最初の形式では1つの引数のみが指定され、続くTransferLogで指定されたログで使われるログの書式を設定する。
+　　この単独の引数ではmod_log_configのページ内の「カスタムログ書式」で説明されているように、前にLogFormat
+　　ディレクティブで定義されたログの書式をnicknameを使って参照することもできる。
+
+　　2つ目の形式は、formatにnicknameを与える。フォーマット文字列全体を再び書く代わりに、このnicknameを続きのLogFormatディレクティブや
+　　CustomLogディレクティブで使うことができる。Nicknameを定義するLogFormatディレクティブは「他には何もしない」-すなわち、
+　　ニックネームを定義するだけで、実際に書式を適用してデフォルトにするということは行わない。
+　　そのため、これは続くTransferLogディレクティブには影響を与えない。さらに、LogFormatディレクティブは既存のnicknameを使って
+　　別のnicknameを定義することはできない。nicknameにはパーセント記号が含まれていてはいけないことにも注意する。
+
+    LogFormat format|nickname [nickname]
+    例：LogFormat "%v %h %l %u %t \"%r\" %>s %b" vhost_common
+
+CustomLog
+　→ サーバへのリクエストをログ収集するために使われる。ログの書式が指定され、
+　　環境変数を使ってロギングが条件に応じて行われるようにすることもできる。
+
+　　ログが書かれる場所を指定する最初の引数は以下の2つの形式の値を取ることができる。
+
+　　　file
+　　　　→ ServerRootからの相対パスで表されるファイル名。
+
+　　　pipe
+　　　　→ パイプ文字 | と、その後に標準入力からログの情報を受け取るプログラムへのパスが続いたもの。
+
+　　2つ目の引数はログファイルに何が書かれるかを指定する。前にあるLogFormatディレクティブにより定義されたnicknameか、
+　　明示的なformat文字列のどちらかを指定することができる。例えば、以下の2つのディレクティブ群は全く同じ効果をもたらす。
+
+        LogFormat "%h %l %u %t \"%r\" %>s %b" common
+        CustomLog logs/access_log common
+
+        CustomLog logs/access_log "%h %l %u %t \"%r\" %>s %b"
+
+　　3つ目の引数は省略可能で、サーバの環境にある変数がるかないかに応じてリクエストをログ収集するかどうかを制御するために使うことができる。
+　　指定された環境変数がリクエストに対して設定されていた場合(! が使われたときは設定されていない場合)、リクエストがログ収集される。
+
+　　環境変数はmod_setenvifモジュールとmod_rewriteモジュールの両方若しくは片方を用いてリクエストごとに設定することができる。
+　　例えば、サーバにあるすべてのGIF画像へのリクエストを別のログファイルには記録したいけれど、メインログには記録したくない、というときは
+　　以下のものを使うことができる。
+
+        SetEnvIf Request URI \.gif$ gif-image
+        CustomLog gif-requests.log common env=gif-image
+        CustomLog nongif-requests.log common env=!gif-image
+
+    CustomLog file|pipe format|nickname [env=[!]environment-variable]
+
+TransferLog
+　→ ログ書式を直接指定できないことと、条件付きロギングが無いことを除くと、CustomLogと全く同じ引数と効果がある。
+　　直接ログ書式を指定する代わりに、ログの書式はその行までに一番最後に指定されたニックネームを定義しないLogFormatディレクティブで
+　　定義されたものを使う。もし他の書式が全く指定されていないときはCoomon Log Format が使われる。
+
+    TransferLog file|pipe
+    例：LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""
+        TransferLog logs/access_log
+
+DocumentRoot
+　→ httpdがファイルを提供するディレクトリを設定する。Aliasのようなディレクティブにマッチしない場合には、
+　　ドキュメントの(ファイルシステム上の)パスを生成するために、リクエストされたURLのパス部分をドキュメントルートに付与する。
+　　例文では、http://www.my.host.com/index.html へのアクセスがあれば /usr/web/index.html が返される。
+　　directory-pathが絶対パスでない場合は、ServerRootからの相対パスと見なされる。
+　　DocumentRootは最後のスラッシュなしで指定する必要がある。
+
+    DocumentRoot directory-path
+    例：DocumentRoot /usr/web
+
+Options
+　→ 特定のディレクトリに対して、どの機能が使用可能かを制御する。
+　　optionをNoneに指定すると、特別な機能はすべて無効になる。また、以下の示す1個以上のものを指定できる。
+
+    All
+    　→ MultiViewsを除いたすべての機能が有効となる。これがデフォルト。
+
+    ExecCGI
+    　→ mod_cgiによるCGIスクリプトの実行を許可する。
+
+    FollowSymLinks
+    　→ サーバが、このディレクトリ内でシンボリックリンクを辿れるようにする。
+
+    Includes
+    　→ mod_includeが提供するSSIを有効にする。
+
+    IncludesNOEXEC
+    　→ SSIは有効になるが、#execコマンドと#exec CGIは無効になる。ただし#include virtualにより、
+    　　ScriptAliasされたディレクトリでCGIを実行することは可能である。
+
+    Indexes
+    　→ もし、URLがディレクトリにマップするリクエストで会って、且つDirectoryIndexで指定したファイル
+    　　(例えば、index.html)がディレクトリ内になければ、mod_autoindexがディレクトリ内の一覧を整形して返す。
+
+    SymLinksIfOwnerMatch
+    　→ シンボリック先のファイルまたはディレクトリが、シンボリックリンクの所有ユーザIDと同じ場合にのみ
+    　　シンボリックリンクを辿れるようにする。
+
+    Options [+|-] option [[+|-]option]...
+
+Alias
+　→ ドキュメントをローカルファイルシステムのDocumentRoot以外の場所に保管することを可能にする。
+　　URLの(%が複合された)パスが URL-path で始まるものは directory-filename で始まるローカルファイルにマップされる。
+　　例文では、http://myserver/image/foo.gif へのリクエストに対して、サーバはファイル /ftp/pub/image/foo.gif を返す。
+
+　　もしURL-pathの最後に/ を書いたなら、サーバがエイリアスを展開するためには、最後の / が必要になることに注意する。
+　　すなわち、Alias /icons/ /usr/local/apache/icons/ と言うものを使用している場合は、/icons というURLはエイリアスされない。
+
+    Alias URL-path file-path|directory-path
+    例：Alias /image /ftp/pub/image
+
+ScriptAlias
+　→ 対象ディレクトリに mod_cgi のcgi-scriptハンドラで処理されるCGIスクリプトがあることを示す以外はAliasディレクティブと同じ。
+　　URLの(%が複合された)パスがURL-pathで始まるものはローカルファイルシステムのフルパスである2番目の引数にマップされる。
+　　例文では、http://myserver/cgi-bin/foo へのリクエストに対してサーバはスクリプト/web/cgi-bin/foo を実行する。
+
+    ScriptAlias URL-path file-path|directory-path
+    例：ScriptAlias /cgi-bin/ /web/cgi-bin/
+
+AliasMatch
+　→ Aliasとほとんど同じだが、簡単な先頭からのマッチを行うのではなく、標準正規表現を利用する。ここで指定された正規表現とURLの
+　　パスが合うかどうかを調べ、合う場合は括弧でくくられたマッチを与えられた文字列で置き換え、それをファイル名として使用する。
+　　例文では、/iconsディレクトリを使うために使用する正規表現を用いている。最後の$1は、regex内で指定されている()内の正規表現に
+　　当てはまったディレクトリ名やファイル名を指定している。
+
+    AliasMatch regex file-path|directory-path
+    例：AliasMatch ^/icons(.*) /usr/local/apache/icons$1
+
+ScriptAliasMatch
+　→ ScriptAliasとほとんど同じだが、簡単な先頭からのマッチを行うのではなく、標準正規表現を利用する。ここで指定された正規表現と
+　　URL-pathが合うかどうかを調べ、合う場合は括弧で括られたマッチを与えられた文字列で置き換え、それをファイル名として使用する。
+　　例文では、標準の/cgi-binを使用するようにするためのものを用いている。最後の$1は、regex内で指定されている()内の正規表現に
+　　当てはまったディレクトリ名やファイル名を指定している。
+
+    ScriptAliasMatch regex file-path|directory-path
+    例：ScriptAliasMatch ^/cgi-bin(.*) /usr/local/apache/cgi-bin$1
+
+Redirect
+　→ 古いURLを新しいものへマップする。新しいURLがクライアントに返される。そして、クライアントは新しいアドレスをもう一回取得
+　　しようとする。URL-path(%が複合された)パスで始まるドキュメントへの全てのリクエストはURLで始まる新しい(%が符号化された)URLへの
+　　リダイレクトエラーが返される。1つ目の例文では、クライアントは http://myserver/service/foo.txt へのリクエストを行うと、
+　　代わりに http://foo2.bar.com/service/foo.txt をアクセスするように告げられる。
+
+　　設定ファイル中の順番に関わらず、Redirect系のディレクティブはAliasディレクティブとScriptAliasディレクティブよりも優先される。
+　　また、.htaccessファイルや<Directory>セクションの中で使われていたとしても、URL-pathは相対パスではなく、完全なURLでなければならない。
+
+　　もしstatus引数が与えられていなければ、リダイレクトは temporary(HTTPステータス302)になる。これはクライアントにリソースが一時的に
+　　移動したと言うことを示す。status引数は他のHTTPのステータスコードを返すために使用することができる。
+　　例としては以下の通り。
+
+    permanent
+    　→ 永久にリダイレクトをするステータス(301)を返す。これはリソースが永久に移動したということを意味する。
+
+    temp
+    　→ 一時的なリダイレクトステータス(302)を返す。これがデフォルト。
+
+    seeother
+    　→ See Otherステータス(303)を返す。これはリソースが他のもので置き換えられたことを意味する。
+
+    gone
+    　→ Goneステータス(410)を返す。これはリソースが永久に削除されたことを意味する。
+    　　このステータスが使用された場合、url引数は省略されなければならない。
+
+　　statusの値にステータスコードを数値で与えることで、他のステータスコードも返すことができる。ステータスが300と399の間にある場合、
+　　url引数は存在していなければならない。その他の場合は省略されていなければならない。ただし、ステータスはApacheのコードが
+　　知っているものである必要がある(http_protocol.cの関数 send_error_responseを参照)。
+
+    Redirect [status] URL-path URL
+    例：Redirect /service http://foo2.bar.com/service
+        Redirect permanet /one http://example.com/other
+        Redirect 303 /three http://example.com/other
+
+RedirectMatch
+　→ Redirectとほとんど同じだが、簡単な先頭からのマッチを行うのではなく、標準正規表現を利用する。
+　　ここで指定された正規表現とURL-pathが合うかどうかを調べ、合う場合は括弧でくくられたマッチを与えられた文字列で置き換え、
+　　それをファイル名として使用する。例文はすべてのGIFファイルを別サーバの同様な名前のJPEGファイルにリダイレクトする。
+
+    RedirectMatch [status] regex URL
+    例：RedirectMatch (.*)\.gif$ http://www.anotherserver.com$1.jpg
+
+UserDir
+　→ ユーザのドキュメントへのリクエストを受けた時に使うユーザのホームディレクトリ中の、実際のディレクトリを設定する。
+　　directory-filenameには以下のどれかを指定する。1つ目の例文は少数のユーザのみがUserDirディレクトリを利用し、
+　　それ以外には利用させたくない場合のもの。2つ目の例文は大部分のユーザはUserDirディレクトリを使用するが、
+　　少数の人は不許可にする場合のもの。3つ目の例文は他のユーザディレクトリを指定するもの。
+
+    ・ディレクトリ名。
+
+    ・disabledキーワード。enabledキーワードで明示的に指定されたユーザ以外の全てのユーザ名-ディレクトリ変換をしないようにする。
+
+    ・disabledキーワードと、スペース区切りのユーザ名リスト。このリスト中に含まれるユーザ名に対しては、たとえenabled節に
+    　あったとしても、決してディレクトリ変換は行われない。
+
+    ・enabledキーワードとスペース区切りのユーザ名リスト。全体では変換が無効になっていたとしても、
+    　これらのユーザ名にはディレクトリ変換が行われる。ただし、disabled節にもあれば変換はされない。
+
+　　もしenabledもdisabledキーワードもUserDirに現れていなければ、引数はファイル名パターンとして扱われ、名前からディレクトリへの
+　　変換の指定を行う時に使われる。http://www.example.com/~bob/one/two.html へのリクエストは以下のように変換される。
+
+    UserDirディレクティブ       変換後のパス
+    UserDir public_html         ~bob/public_html/one/two.html
+    UserDir /usr/web            /usr/web/bob/one/two.html
+    UserDir /home/*/www         /home/bob/www/one/two.html
+
+　　以下のディレクティブはクライアントに対してリダイレクトを送信する。
+
+    UserDirディレクティブ                   変換後のパス
+    UserDir http://www.example.com/users    http://www.example.com/users/bob/one/two.html
+    UserDir http://www.example.com/*/usr    http://www.example.com/bob/usr/one/two.html
+    UserDir http://www.example.com/~*/      http://www.example.com/~bob/one/two.html
+
+    UserDir directory-filename [directory-filename]...
+    
+    例：UserDir disabled
+        UserDIr enabled user1 user2 user3
+
+    例：UserDir enabled
+        UserDir disabled user4 user5 user6
+
+    例：UserDir public_html /usr/web http://www.example.com/
+
+ProxyPass
+　→ リモートサーバをローカルサーバの名前空間にマップできるようにする。ローカルサーバは通常の意味でのプロキシとしては動作せず、
+　　リモートサーバのミラーとして振舞う。pathはローカルの仮想パスの名前。urlはリモートサーバの部分URLになり、
+　　クエリー文字列を含むことはできない。ProxyPassディレクティブを使っている時はProxyRequestsディレクティブは通常はoffに設定されるべき。
+　　例文1では、http://example.com/mirror/foo/bar へのリクエストが内部的に http://backend.example.com/bar へのプロキシリクエストに
+　　変換されることになる。例文2では、サブディレクトリ/mirror/foo/i を除く/mirror/foo への全てのリクエストをbackend.example.com
+　　にプロキシする。そのため、一般的んProxyPassディレクティブの前に除外ディレクティブを置く必要があり、順番が重要となる。
+
+    ProxyPass [path] !|url [key=value key=value ...]
+    例：ProxyPass /mirror/foo http://backend.example.com
+    例：ProxyPass /mirror/foo/i !
+        ProxyPass /mirror/foo http://backend.example.com
+
+============================================================================================================================
+
+モジュール一覧
+
+mod_status
+　→ サーバがどのくらいの性能で動作しているかを知ることができる。
+
+mod_proxy
+　→ プロキシサーバを設定する。Apacheのプロキシ機能はmod_proxyの他にいくつかのモジュールに分割されている。
+　　mod_proxy_http , mod_proxy_ftp , mod_proxy_ajp…など
+　　そのため、特定のプロキシの機能を使いたい場合は、mod_proxyと該当するモジュールをサーバに組み込む必要がある。
+
+mod_ssl
+　→ SSLを使用する。
+　　SSLセッションのキャッシュに使用するSSLSessionCacheディレクティブ、SSLStaplingCacheディレクティブが含まれている。
+
+mod_so
+　→ 起動時や再起動時に実行コードとモジュールをサーバにロードする。
+　　「Windows用のロード可能なモジュールを作成する」のようなことが書いてあるので、それ関連でわからないときは以下のページへ
+　　https://httpd.apache.org/docs/current/mod/mod_so.html
+
+mod_mime
+　→ 拡張子を使っていろいろな「メタ情報」をファイルに関連付けるために使用される。
+　　この情報はドキュメントのファイル名とMIMEタイプ、言語、文字セット、エンコーディングとを関連付ける。
+　　この情報はブラウザに送られ、複数のファイルの中からユーザの好みのものが選ばれるように、コンテントネゴシエーションでも使われる。
+
+mod_env
+　→ このモジュールによりCGIスクリプトとSSIページに適用される環境イェン数を制御することができるようになる。
+　　環境変数はhttpdプロセスを起動したシェルから渡される。また、設定ファイルで環境変数を設定したり、削除したりすることができる。
+
+mod_log_config
+　→ クライアントのリクエストを柔軟にログ収集する機能を提供する。ログはカスタマイズ可能な書式で書かれ、ファイルに直接書いたり、
+　　外部プログラムに渡したりすることができる。個々のリクエストを特徴に応じてログに書いたり書かなかったりできるように、
+　　条件によるログ収集も提供されている。
+
+　　このモジュールは3つのディレクティブを提供する。ログファイルを作成するためのTransferLog、新しい書式を定義するLogFormat、
+　　ログファイルと書式を一度に定義するCustomLogである。各リクエストが複数回ログ収集されるようにするためにTransferLogディレクティブと
+　　CustomLogディレクティブは複数回使用することができる。
+
+mod_alias
+　→ サーバにリクエストが到着したときにURLの操作や制御をすることを可能にする。様々なコンテキスト中でのAliasやRedirectは他のディレクティブと
+　　同じように標準の「マージ規則」に従って処理される。ただし、(例えば<VirtualHost>セクションの中のように)複数のAliasやRedirectが
+　　同じコンテキスト中に現れた場合は決まった順番で処理される。
+
+　　まず、Aliasの前に全てのRedirectが処理される。そのため、RedirectかRedirectMatchにマッチするリクエストにはAliasは決して適用されない。
+　　次に、AliasとRedirectが設定ファイル中の順番に適用され、最初にマッチしたものが優先される。そのため、2つ以上のディレクティブが
+　　同じパスに適用される時は、全てのディレクティブの効果を得るためにはより詳しいパスを先に書く必要がある。
+　　例えば、以下の設定は期待通りの動作をする。
+
+    Alias /foo/bar /baz
+    Alias /foo /gaq
+
+　　しかし、上記の2つのディレクティブの順番が逆になると、/foo Aliasが常に /foo/bar Aliasより先にマッチするので、
+　　/foo/bar は決して適用されることは無くなってしまう。
+
+mod_userdir
+　→ http://example.com/~user/ 構文を使ってユーザ専用ディレクトリにアクセスできるようにする。UserDirディレクティブのみ。
+
+============================================================================================================================
+
+Apache用語など一覧
+
+MIMEタイプ
+　→ 送信されているドキュメントの種類を表すための方法。この名前はフォーマットが MultiPurpose Internet Mail Extension から
+　　借りてこられたことによる。これはスラッシュで分離された、主タイプと副タイプからなる。
+　　例えば、text/html , image/git , application/octet-stream などがある。HTTPでは、MIMEタイプはContent-typeヘッダで送信される。
+
+ヘッダ
+　→ 実際のコンテンツの前に送られ、コンテンツを説明するメタ情報の入ったHTTPリクエスト応答の一部分。
+
+ハンドラ
+　→ ファイルが呼ばれたときに行われる動作のApacheの内部での表現。通常、ファイルはファイルタイプ(MIMEタイプ)に基づいた暗黙のハンドラがある。
+　　普通は全てのファイルは単にサーバに扱われるが、ファイルタイプの中には別に「ハンドル(扱う)」されるものもある。
+
+　　ファイルの拡張子やおいている場所に基づいてファイルタイプと関係なく、ハンドラを明示的に設定することもできる。
+　　この方法は、ファイルにタイプとハンドラの両方を関連付けることができるという点で優れている。
+
+　　ハンドラはサーバに組み込んだり、モジュールとして含めたり、Actionディレクティブとして追加することができる。
+　　以下は標準配布に含まれているハンドラである。
+
+　　　default-handler(core)
+　　　　→ default_handler()を使ってファイルを送る。静的なコンテンツを扱う時にデフォルトで使用されるハンドラ。
+
+　　　send-as-is(mod_asis)
+　　　　→ HTTPヘッダのあるファイルをそのまま送る。
+
+　　　cgi-script(mod_cgi)
+　　　　→ ファイルをCGIスクリプトとして扱う。
+
+　　　imap-file(mod_imagemap)
+　　　　→ イメージマップのルールファイルとして解析する。
+
+　　　server-info(mod_info)
+　　　　→ サーバの設定情報を取得する。
+
+　　　server-status(mod_status)
+　　　　→ サーバの状態報告を取得する。
+
+　　　type-map(mod_negotiation)
+　　　　→ コンテントネゴシエーションのためのタイプマップとして解析する。
+
+メタ情報
+　→ meta要素とも呼ばれる。「検索エンジン」や「Google」にWebページの情報を伝えるHTMLタグのこと。
+
+コンテキスト
+　→ 設定ファイル中で、特定の種類のディレクティブが許可されている場所。
+
+ディレクティブ
+　→ Apacheのいろいろなふるまいを制御する設定コマンド。ディレクティブは設定ファイルに書かれる。
+
+バーチャルホスト
+　→ 1つのApacheを使って複数のウェブサイトを扱うこと。IPバーチャルホストはIPアドレスを使ってウェブサイトを区別する。
+　　また、名前ベースのバーチャルホストはホストの名前だけを使って区別するので、同じIPアドレス上で多くのサイトをホストできる。
+
+モジュール
+　→ プログラムの独立した一部分。Apacheの機能の多くは使用するかしないかを選択できるモジュールの中にある。
+　　Apache httpd に組み込まれているモジュールは静的モジュールと呼ばれ、別に保存され、
+　　実行時に読み込むことのできるモジュールは動的モジュールもしくは DSO と呼ばれる。
+　　デフォルトで含まれているモジュールはbaseモジュールと呼ばれる。
+　　Apache HTTPサーバのtarballの一部としては配られていないApache用のモジュールがある。それらは「サードパーティモジュール」と呼ばれる。
+
+　　モジュールには「ステータス」というものがあり、これはそのモジュールがApachewebサーバにどれくらい密接に組み込まれているかを示す。
+　　この属性がとりえる値は以下のもの。
+
+　　　　MPM
+　　　　　→ 「マルチプロセッシングモジュール」である。
+　　　　　　他の種類のモジュールとは違い、Apacheは常にMPMを一つだけ使用し続ける。
+　　　　　　この種類のモジュールは基本的なリクエストの扱いとディスパッチを行う。
+
+　　　　Base
+　　　　　→ デフォルトでコンパイルされ、設定からモジュールを削除していない限り、通常は利用可能。
+
+　　　　Extension
+　　　　　→ デフォルトではコンパイルされず、サーバにも読み込まれない。
+　　　　　　そのモジュールとその機能を有効にするには、サーバをビルドするための設定を変更して、Apacheを再コンパイルする必要がある。
+
+　　　　Experimental
+　　　　　→ Apache配布物に同梱されているが、使用する場合は自己責任で行う必要がある。
+　　　　　　そのモジュールは、ドキュメントも完成に向けて作成中であり、サポートされているとは限らない。
+
+　　　　External
+　　　　　→ 基本Apache配布に同梱されない(サードパーティモジュール)。そのため、Apacheはサポートしていない。
+
+Tarball
+　→ tarユーティリティを使ってまとめられたファイルのパッケージ。Apache配布は圧縮されたtarアーカイブかpkzipで保管されている。
+
+CGI(Common Gateway Interface)
+　→ 外部プログラムがリクエストを扱うことができるようにするためのwebサーバと外部プログラム間のインタフェースの標準仕様。
+　　インタフェースは元々NCSAにより定義されていたが、RFCプロジェクトも存在する。
+
+　　わかりやすく言うと、webサーバがコンテンツ生成をする外部プログラムと強調して動作するための方法を定義している。
+　　そのプログラムはしばしばCGIプログラムやCGIスクリプトと呼ばれる。CGIは、ウェブサイトに動的なコンテンツを置くための最も簡単で
+　　一般的な方法である。
+
+apxs(APache eXtenSion tool)
+　→ モジュールソースを動的共有オブジェクト(DSO)にコンパイルし、Apache Webサーバにインストールする手助けをするperlスクリプト。
+
+SSI(Server Side Includes)
+　→ HTMLファイル中に処理ディレクティブを埋め込む技術の1つ。
+

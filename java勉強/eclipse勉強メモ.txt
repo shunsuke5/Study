@@ -1,0 +1,6 @@
+eclipse 勉強メモ
+
+・
+
+Must declare a named package because this compilation unit is associated to the named module 'project1'	Test.java	/project1/src	line 1	Java Problem
+を直すところから、あと日本語化する

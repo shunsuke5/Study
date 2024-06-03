@@ -1,0 +1,339 @@
+java プログラムなど
+
+定数の宣言
+　final 型 定数名 = 初期値;
+
+キャスト変換
+　(変換先の型名)式
+
+配列変数の作成
+　要素のデータ型[] 配列変数名
+
+配列作成と初期化の省略記法
+　要素の型[] 配列変数名 = new 要素の型[] {値1, 値2, 値3, …}
+　要素の型[] 配列変数名 = {値1, 値2, 値3, …}
+
+拡張for文
+　for (要素の型 任意の変数名 : 配列変数名) {
+    …
+}
+
+2次元配列の宣言
+　要素の型[][] 配列変数名 = new 要素の型[行数][列数];
+
+2次元配列の要素の利用
+　配列変数名[行の添え字][列の添え字]
+
+メソッドの定義
+　public static void メソッド名() {
+    メソッドが呼び出されたときの処理
+}
+
+引数を利用したメソッドの定義
+　public static void メソッド名(引数リスト) {
+    メソッドの処理
+}
+
+戻り値を利用したメソッドの定義
+　public static 戻り値の型 メソッド名(引数リスト) {
+    メソッドの処理
+    return 戻り値;
+}
+
+戻り値を利用したメソッド呼び出し
+　型 変数名 = メソッド名(引数リスト);
+
+コマンドライン引数を利用したJavaプログラムの起動
+　java プログラム名 引数リスト
+
+他のソースファイルに属するメソッドの呼び出し
+　ソースファイル(クラス)名.メソッド名
+
+クラスをパッケージに所属させる
+　package 所属させたいパッケージ名;
+
+完全限定クラス名(FQCN)
+　パッケージ名.クラス名.メソッド名;
+
+FQCN入力の手間を省くための宣言
+　import パッケージ名.クラス名;
+
+そのパッケージに属する全クラスのインポート
+　import パッケージ名.*;
+
+javaコマンドの正確な構文
+　java 起動したいクラスの完全限定クラス名(FQCN)
+
+インスタンスの生成
+　クラス名 変数名 = new クラス名();
+
+フィールドへの値の代入
+　変数名.フィールド名 = 値;
+
+コンストラクタの定義
+　public class クラス名 {
+    public クラス名() {
+        インスタンス生成時に自動的に実行する処理
+    }
+}
+
+引数を伴うインスタンス生成
+　new クラス名(実引数1,実引数2…)
+
+別コンストラクタの呼び出しをJVMに依頼する
+　this(引数);
+
+継承を用いたクラスの定義
+　public class クラス名 extends 元となるクラス名 {
+    親クラスの差分となるメンバ
+}
+
+親インスタンス部分のフィールドを利用する
+　super.フィールド名
+
+親インスタンス部分のメソッドを呼び出す
+　super.メソッド名(引数)
+
+親クラスのコンストラクタの呼び出し
+　super(引数);
+
+詳細未定のメソッド(抽象メソッド)を宣言
+　public abstract 戻り値の型 メソッド名(引数リスト);
+
+抽象メソッドを含むクラスの宣言
+　public abstract class クラス名 {…}
+
+インタフェースの宣言
+　public interface インタフェース名 {…}
+
+インタフェースの実装
+　public class クラス名 implements インタフェース名 {…}
+
+インタフェースによる多重継承
+　public class クラス名 implements
+    親インタフェース名1,親インタフェース名2,… {…}
+
+extendsとimplementsの両方を使ったクラス定義
+　public class クラス名 extends 親クラス
+    implements 親インタフェース名1,親インタフェース名2,… {…}
+
+デフォルト実装付き抽象メソッドの宣言
+　default 戻り値の型 メソッド名(引数リスト) {
+    処理のデフォルト実装
+}
+
+安全にキャストできるかを判定しつつ、キャストする(多態性)
+　変数 instanceof 型名 キャスト後格納変数名
+
+フィールドのアクセス制御
+　アクセス修飾子 フィールド宣言;
+
+メソッドのアクセス聖書
+　アクセス修飾子 メソッド宣言 {…}
+
+getterメソッドの定石
+　public フィールドの型 getフィールド名() {
+    return this.フィールド名;
+}
+
+静的フィールドへのアクセス方法(1)
+　クラス名.静的フィールド名
+
+静的フィールドへのアクセス方法(2)
+　インスタンス変数名.静的フィールド名
+
+静的メソッドの呼び出し
+　クラス名.メソッド名();
+　インスタンス変数名.メソッド名();
+
+static import文
+　import static パッケージ名.クラス名.静的メンバ名;
+
+try-catch文
+　　try {
+    本来の処理
+    } catch(例外クラス 例外インスタンス変数名) {
+    例外が発生した場合の処理
+    }
+
+try-with-resource文
+
+　try (closeによる後片付けが必要な変数の宣言) {
+    本来の処理
+} catch (例外クラス 変数名) {
+    例外が発生した場合の処理
+}
+
+スロー宣言による例外の伝播の許可
+　アクセス修飾 戻り値 メソッド名(引数リスト) throws 例外クラス1, 例外クラス2, … {
+    メソッドの処理内容
+}
+
+例外的状況発生の報告
+　throw new 例外クラス名("エラーメッセージ");
+
+メンバクラスの宣言
+　外部クラス {
+    メンバクラス {
+        メンバクラスの内容
+    }
+}
+
+メンバクラスの呼び出し方
+　外部クラス名 外部クラスインスタンス変数名(以下eとする) = new 外部クラス名();
+　外部クラス名.メンバクラス名 メンバクラスインスタンス変数名 = e.new メンバクラス名();
+
+関数を変数に代入する
+
+　変数名 = クラス名::そのクラスのstaticメソッド　※staticメソッドの場合
+
+　変数名 = インスタンス変数名::そのインスタンスのメソッド名　※インスタンスメソッドの場合
+
+　しかし、ある特定の引数と戻り値を持つ関数オブジェクトを格納できるのは、「その引数と戻り値を持つ
+　メソッド宣言を用いたSAMインターフェイスのみ」ということに注意する。
+　SAMインターフェイス(Single Abstract Method Interface)とは、その名の通り
+　「抽象メソッドを1つしか含まないインターフェイス」のこと。
+　プログラムの流れとしては以下の通り。
+
+public interface Sam {  // Sam.java
+    public abstract int sum(int a, int b);
+}
+
+public class Main {     // Main.java
+    public static void main(String[] args) {
+        Sam sam = Main::mainsum;
+        System.out.println(sam.sum(1, 2));
+    }
+    public static int mainsum(int a, int b) {
+        return a + b;
+    }
+}
+
+　上記のように「抽象メソッドを一つ持つインターフェイスを用意すれば、関数を変数に代入することができる。」
+　しかし、毎回インターフェイスを作成するのは少し面倒。そのためにjavaでは「java.util.function」の
+　パッケージとして汎用的なSAMが用意されている。例としては以下。
+
+　　IntBinaryOperator → int applyAsInt(int,int)
+　　IntToLongFunction → long applyAsLong(int)
+　　IntToDoubleFunction → double applyAsDouble(int)
+　　IntConsumer → void accept(int)
+　　IntSupplier → int getAsInt()
+
+
+=========================================================================================================
+
+命令一覧
+
+System.out.print();
+　→　改行せずに画面に文字を表示する。
+
+Math.max(a,b);
+　→　引数として与えた2つの値の内、大きい方の値が演算結果となる。
+
+Integer.parseInt(a);
+　→　文字列を整数に変換する。aには整数として解釈できる文字列が入った
+　　 String型の変数やリテラルを指定すると、int型の整数に変換した実行結果を返す。
+
+new java.util.Random().nextInt(a);
+　→　乱数を発生させる。aには発生させる乱数の上限値(上限値は乱数結果に含まない)を指定する。
+
+new java.util.Scanner(System.in).nextLine();
+　→　キーボードから1行の文字列の入力を受け付ける。
+
+new java.util.Scanner(System.in).nextInt();
+　→　キーボードから1つの整数の入力を受け付ける。
+
+a.equals(b)
+　→　文字列を比較する。aには文字列型の変数を、bには比較する文字列を指定する。
+　　 比較相手の文字列には文字列のリテラルや変数を指定できる。
+
+a.length
+　→　配列の要素数を取得する。aには配列変数名を指定する。
+
+a.length()
+　→　文字列の文字数を取得する。aにはString型の変数名を指定する。
+
+java.lang.Thread.sleep(a)
+　→　現在実行中のスレッドを指定されたミリ秒数の間スリープさせる。
+　　 aにはミリ単位の秒数を指定する。(3秒なら3000)
+
+this.a
+　→　自分自身のインスタンスを意味する。aには自分自身のインスタンスのフィールドを指定する。
+　　 this.hp = 100; では「自分自身のインスタンスのhpフィールドに100を代入する」という意味となる。
+
+throw new IllegalArgumentException
+　→　エラーを出してプログラムを強制停止する命令。setterメソッドで使われる。
+
+toString()
+　→　クラス自身の内容の文字列表現を返す。デフォルトの定義では「型名@英数字」というシンプルな情報のため、
+　　 意図した情報を表示させたい場合はオーバーライドして都合の良いように定義するとよい。
+　　 いくつもの情報を内部に持つクラスを開発したら、積極的にオーバーライドを検討した方が良い。
+
+System.out.printf(書式指定文字列,パラメータ…)
+  →　書式を指定して画面に表示する。
+
+Stringクラス
+
+  public boolean equalsIgnoreCase(String s)
+  　→　大文字/小文字を区別せず内容が等しいか調べる。
+  
+  public boolean isEmpty()
+  　→　空文字か(長さが0か)を調べる。
+  
+  public boolean contains(String s)
+  　→　一部に文字列sを含むかを調べる。
+  
+  public boolean startsWith(String s)
+  　→　文字列sで始まるかを調べる。
+  
+  public boolean endsWith(String s)
+  　→　文字列sで終わるかを調べる。
+  
+  public int indexOf(int ch)
+  public int indexOf(String str)
+  　→　文字ch(または文字列str)が最初に登場する位置を調べる。
+  
+  public int lastIndexOf(int ch)
+  public int lastIndexOf(String str)
+  　→　文字ch(または文字列str)を後ろから検索して最初に登場する位置を調べる。
+  
+  public char charAt(int index)
+  　→　指定位置の1文字を切り出す。
+  
+  public String substring(int index)
+  public String substring(int index,int endIndex)
+  　→　指定位置から始まる文字列を任意の長さだけ切り出す。先頭位置は0と指定するので注意。
+  
+  public String toLowerCase()
+  　→　大文字を小文字に変換する。
+  
+  public String toUpperCase()
+  　→　小文字を大文字に変換する。
+  
+  public String trim()
+  　→　前後の空白を除去する。
+  
+  public String replace(String before,String after)
+  　→　文字列を置き換える。
+  
+  String.format(書式指定文字列,パラメータ…)
+  　→　文字列を整形する。
+  
+  public String[] split(String regex)
+  　→　指定された正規表現に一致する位置で分割する。
+  　　 regexには分割したい位置の記号を指定する。
+  
+  public boolean endsWith(String suffix)
+  　→　suffixが指定された接尾辞で終わるかどうかを判定する。
+
+ArrayList<～> 変数名 = new ArrayList<～>();
+　→　ArrayListの宣言。～の部分にはArrayListに格納するインスタンスの型名を指定する。
+　　 右辺のインスタンス型名(～)は省略可能。
+
+=========================================================================================================
+
+Java API一覧
+
+java.awt
+　→　javaでGUIを作成する時に使用するパッケージ。
+
