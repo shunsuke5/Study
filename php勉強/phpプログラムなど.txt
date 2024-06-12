@@ -30,23 +30,64 @@ Nowdoc
     EOD;
 
 配列の宣言
-    $array = array(key => value, key => value2...);
-    $array = [key => value, key => value2...];　← 短縮版
-
 　→ key は整数または文字列。valueには任意の方を指定できる。配列の宣言時に同じキーで複数の要素を指定すると、最後に指定したものが
 　　それまでの値を上書きする。keyはオプション。省略した場合、phpはこれまでに使われた整数のキーの中で最大のものに1を加えた値を使う。
 
-配列の分解
-    [変数1, 変数2, 変数3...] = 配列変数
-    [, , 変数3...] = 配列変数
+    $array = array(key => value, key => value2...);
+    $array = [key => value, key => value2...];　← 短縮版
 
+配列の分解
 　→ 配列の各要素を変数に格納していく。2つ目の例のようにすると、変数が与えられない配列の要素は無視される。
 　　つまり、変数3にインデックス2の要素が格納されるだけとなる。
 
+    [変数1, 変数2, 変数3...] = 配列変数
+    [, , 変数3...] = 配列変数
+
 配列のアンパック
+　→ 配列の値を展開(アンパック)する。...を使った配列のアンパックは、php7.4.0以降で利用可能。
+
     [...array, ...array2]
 
-　→ 配列の値を展開(アンパック)する。...を使った配列のアンパックは、php7.4.0以降で利用可能。
+ユーザー定義関数内でグローバル変数の使用
+    global $a, $b;
+    $GLOBALS['b'] = $GLOBALS['a'] + $GLOBALS['b'];
+
+定数の定義
+    define("CONSTANT", "Hello World.");
+    const CONSTANT = 'Hello World';
+
+宇宙船演算子
+　→ $aが$bより小さい場合は、0より小さい整数。$aが$bと等しい場合は、0。$aが$bより大きい場合は、0より大きい整数を返す。
+
+    $a <=> $b
+
+三項演算子(真ん中省略形)
+　→ expr1がtrueと同等の場合はexpr1、それ以外の場合はexpr3が評価される。この場合、expr1は一度だけ評価される。
+
+    expr1 ?: expr3
+
+Null合体演算子
+　→ expr1がnullである場合はexpr2と評価され、それ以外の場合はexpr1と評価される。この演算子は左側の値が存在しない場合でも
+　　noticeやwarningが発生しない。isset()と同じ挙動である。これは、配列のキーを扱う場合に便利。
+
+    (expr1) ?? (expr2)
+
+match式
+　→ 値の一致をチェックした結果に基づいて評価結果を分岐する。switch文とは異なり、弱い比較ではなく型と値のチェック(===)を用いる。
+　　match式はphp8.0.0以降で利用可能。match式は全ての場合を網羅していなければならない。制約式がどの分岐でも処理できなかった場合、
+　　UnhadledMatchErrorがスローされる。制約式に true を指定すれば、厳密な一致(===)を使わずにmatch式を用いることができる。
+
+    $return_value = match (制約式) {
+        単一の条件式 => 返却式,
+        条件式1, 条件式2 => 返却式,
+    };
+
+    $return_value = match($food) {
+        'apple' => 'This food is an apple',
+        'bar' => 'This food is a bar',
+        'cake' => 'This food is a cake',
+        default => 'This food is a food',
+    };
 
 
 
