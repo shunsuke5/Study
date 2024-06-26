@@ -1,0 +1,40 @@
+Laravel メモ
+
+・Laravelをインストールする前に、「Composer」をインストールする必要がある。Composerとは、php向けの依存関係管理システム。
+　ライブラリ依存関係を簡単な記述で管理できるようにしたものが依存関係管理システムである。
+
+・Composerをインストールする際に参考にしたサイトは以下。
+　https://qiita.com/tsuna_kan/items/a51cfaa668ced7bacb0e
+
+・
+
+インストール参考サイトの「ファイル初期設定」から
+
+=================================================================================================================================
+
+エラーやミス、わからないことなど
+
+・「composer create-project laravel/laravel Laravel_1」コマンドをdosで実行し、Laravelをインストールしようとしたところ、
+　「Failed to download laravel/laravel from dist: The zip extension and unzip/7z commands are both missing, skipping.
+　The php.ini used by your command-line PHP is: C:\php-sdk\php.ini Now trying to download from source」とエラーが出る。
+　調べたところ、これはphp.iniのzip拡張を有効にすれば良いとのこと。
+
+　しかしdosのカーソルがまだ実行中になっていたのでそのまま待っているとインストールが進み、owner配下にLaravel_1フォルダが作成された。
+　しかしインストール後、「Your requirements could not be resolved to an installable set of packages」のエラーが出た。
+　また、Laravel_1フォルダ配下に「vendor」フォルダがなく、恐らくエラーのせいで欠けたのだと判断した。
+
+　インストール後に出たエラーの後にProblem1 のように表示されていたエラーメッセージとしては以下のようなものがあった。
+　「require ext-fileinfo * -> it is missing from your system. Install or enable PHP's fileinfo extension.」
+　「require php ^7.2 -> your php version (8.3.4) does not satisfy that requirement.」
+　そのため、php.iniのfileinfoのコメントアウトを外し、Laravel_1配下の「composer.json」ファイルのphpバージョン指定に
+　8.0と8.3.4を追加した。
+
+　再インストールしようとすると「Project directory "C:\Users\Owner\Laravel_1" is not empty」のエラー。
+　一旦Laravel_1を削除すると次は「The openssl extension is required for SSL/TLS protection but is not available. 
+　If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the 'disable-tls' 
+　option to true.」のエラーが出た。opensslの拡張を有効にし、再度インストールし直すとインストールが進行し、
+　エラーが出ることなくインストールが完了した。Vendorフォルダも作成されていた。
+
+　　→ 参考サイト　https://qiita.com/yyy752/items/20e86a6141d7062e0140
+
+・
