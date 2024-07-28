@@ -1,6 +1,8 @@
 eclipse 勉強メモ
 
-・
+・何かを実行したときにいちいちショートカットキーが表示されるのは「キーバインド」と言う。
+　これを非表示にしたい場合、「ウィンドウ」→「設定」→「一般」→「キー」の、
+　「コマンドが呼び出されたときにキー・バインドを表示する」のチェックを外す。
 
 Must declare a named package because this compilation unit is associated to the named module 'project1'	Test.java	/project1/src	line 1	Java Problem
 を直すところから、あと日本語化する
