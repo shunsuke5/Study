@@ -1,0 +1,30 @@
+SpringBoot勉強メモ
+
+・Eclipseにてguidesを学習中
+
+https://spring.pleiades.io/guides
+
+JMSでメッセージングのガイドから
+
+spring bootについて、基本的な説明は以下のサイトが分かりやすい。
+https://qiita.com/ist-a-ku/items/1d278619f241f4800bb2
+
+やりたいこと
+
+・HTMLとコントローラー間でどのようにデータを渡すのか
+・データベースに接続、操作する方法
+・
+
+=================================================================================================================================
+
+エラーやミス、わからなかったことなど
+
+・JMSのガイドで実行したときに、以下のエラーが出る。
+　「Error creating bean with name 'receiver' defined in C:\pleiades\...Receiver.class ]: Error creating bean with name 'myFactory' 
+　defined in com.example.hello.HelloApplication: Unsatisfied dependency expressed through method 'myFactory' parameter 1」
+　　→ 原因は、「org.springframework.boot:spring-boot-starter-json」の依存関係をbuild.gradleに追加していないことだった。
+　　　このような「Error creating bean with name 'xxx'」は、xxx が取得できなかった、という旨のエラーであるため、
+　　　なぜ取得できなかったのかを考える必要がある。その後のエラーでも言われているように、大体は依存関係のミス。
+　　　参考サイト：https://qiita.com/circular/items/6bf172a4cdfbc9e725c3
+
+・

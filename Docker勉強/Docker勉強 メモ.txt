@@ -1,0 +1,17 @@
+Docker勉強 メモ
+
+・https://zenn.dev/suzuki_hoge/books/2022-03-docker-practice-8ae36c33424b59
+　上記サイトで学習する
+
+・compose.ymlファイルを用いてdocker composeコマンドでdockerを操作すると、複数のコンテナに対して一括操作できるためとても便利。
+　dockerコマンドではstart,stopなどの操作を1コマンドにつき1コンテナしか実行できないため、使用するコンテナの数が増えると手間がかかってしまう。
+　そこで、docker composeコマンドを使えば、compose.yml内に記述したコンテナに対してdocker composeコマンドで一括操作することができる。
+　例えば、PostgreSQLコンテナ、Apacheコンテナなどを一括で起動、停止することができたりする。
+
+・wsl上のdockerでcompose.ymlファイルを使用してpostgresqlを操作する手順は以下参考
+https://qiita.com/hatsumi3/items/1928425a3cc47370f5bc
+
+・
+
+===================================================================================================================================
+

@@ -4,5 +4,23 @@ eclipse 勉強メモ
 　これを非表示にしたい場合、「ウィンドウ」→「設定」→「一般」→「キー」の、
 　「コマンドが呼び出されたときにキー・バインドを表示する」のチェックを外す。
 
-Must declare a named package because this compilation unit is associated to the named module 'project1'	Test.java	/project1/src	line 1	Java Problem
-を直すところから、あと日本語化する
+=================================================================================================================================
+
+ショートカットキー
+
+ctrl + N
+　→ 新規作成(作成したい場所を選択するとその直下に作成)
+
+ctrl + W
+　→ ファイルを閉じる
+
+ctrl + shift + W
+　→ ファイルをすべて閉じる
+
+F2
+　→ ファイル名変更
+
+ctrl + shift + S
+　→ ファイルをすべて保存
+
+ctrl + D
