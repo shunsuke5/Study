@@ -1,0 +1,45 @@
+WSL-2 Ubuntu メモ
+
+WSL-2のインストール
+
+・コントロールパネル → プログラム → Windowsの機能の有効化または無効化 から「Linux用Windowsサブシステム」と
+　「仮想マシンプラットフォーム」を有効化。そのあとに以下の参考サイトの手順でインストール。
+　https://qiita.com/tks_00/items/4347dcc3d381e8e7d8fa
+
+SpringBootのガイドで使うRedIsサーバの作成
+
+・mkdir docker-project/messagingredis でガイド用のプロジェクトディレクトリを作成。
+　vi compose.yml で設定ファイルを作成。
+　docker-compose up でサーバーを起動。
+
+・しかし上記のコマンドではエラーが起こる。まず、compose.ymlは無効な設定ファイル名であるため、
+　「Can't find a suitable configuration file in this directory or any
+        parent. Are you in the right directory?
+
+        Supported filenames: docker-compose.yml, docker-compose.yaml」のエラーが起こった。
+　ファイル名を docker-compose.yml に変更することで解消。
+
+　次に、「yaml.scanner.ScannerError: mapping values are not allowed here
+  in "./docker-compose.yml", line 5, column 10」のエラーが起こる。
+　これは、コロンの後にスペースを入力していなかったのが問題であったため、スペースをつけると解消。
+
+　次に、「The Compose file './docker-compose.yml' is invalid because:
+Unsupported config option for services: 'redis'」のエラーが出る。
+　これは、調べるとcomposeのバージョンが古いとこのようなエラーが出るとのことなので、
+　「sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" 
+　-o /usr/local/bin/docker-compose」や「sudo apt-get install docker-compose-plugin」コマンドを実行し、
+　更に、ファイルの先頭にversion の記述をした方が良いとのことだったため、chatGPTが書いていたようにVersion: 3.8とした。
+
+　次に、「Version in "./docker-compose.yml" is unsupported. You might be seeing this error 
+　because you're using the wrong Compose file version. Either specify a supported version (e.g "2.2" or "3.3") 
+　and place your service definitions under the `services` key, or omit the `version` key and place your service definitions 
+　at the root of the file to use version 1.
+　For more on the Compose file format versions, see https://docs.docker.com/compose/compose-file/」のエラーが起こる。
+　これは、エラー文の中でサポートされてるバージョンは2.2か3.3だよみたいなことが書いてあったため、
+　ファイルの記述をversion: 3.3 に修正した。
+
+　ここでやっとdocker-compose up が実行され、問題なくサーバが起動してくれたように見える。
+　ただ、これを記述している時点ではまだspringbootのプログラムを作っていないため、作ってから接続する際に
+　やっぱり違ったなどがあるかもしれない。
+
+=================================================================================================================================
